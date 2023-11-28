@@ -1,20 +1,25 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 import { Action, Create, CRUD, IgnoreField, Read } from '../fc.decorators'
 import { $ } from '../crud-gen/fast-crud.decorator'
+import { PageRes } from '../crud-gen/fast-crud.decl'
 
 @Entity()
 @Create({
   requires: /.*/,
-  expect: (x) => x.name.length > 3,
+  expect: [(x) => x.name.length >= 3, (x) => x.name.length <= 10],
 })
-@Read({ sort: { id: 'ASC' } })
+@Read({
+  sort: { id: 'ASC' },
+  // transformQueryRet: (pageRes: PageRes<CRUDUser>) =>{pageRes.records.map((u: CRUDUser) => (u.name = u.name.toUpperCase())); return pageRes}
+  // TransformQueryRetInplace: (pageRes: PageRes<CRUDUser>) =>
+  //   pageRes.records.map((u: CRUDUser) => (u.name = u.name.toUpperCase())),
+  TransformRecordsInplace: (u) => (u.name = u.name.toUpperCase()),
+})
 @Action({
-  action: 'abaaba',
   method: 'read',
-  transformQueryReturn(x) {
-    return 6
-  },
-  rawInput: true,
+  action: 'abaaba',
+  transformQueryRet: () => 666,
+  rawInput: true, // this prevents the form from being wrapped, ignores pagination & sort
 })
 @CRUD({ name: 'crud-user' })
 @IgnoreField(['id'])

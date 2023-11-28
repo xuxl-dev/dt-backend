@@ -20,7 +20,7 @@ import {
   IGNORE_ME,
   TransformerType,
   post_transformer_factories,
-  transform_after_processor,
+  after_transformer,
 } from './backend/fragments'
 import { FCrudJwtMiddleware } from './middleware/jwt.middleware'
 import { fixRoute } from 'src/utils/utils'
@@ -88,21 +88,16 @@ export class FasterCrudService {
     // merge base methods
     this.merge(baseMethods, options)
 
-    console.log(options)
-
     const docs: any = { crud: {}, dict }
     for (const action of Object.keys(options)) {
-      console.log(action)
       const option: ActionOptions<T> = options[action]
       const method : CRUDMethod = option.method
-      const query = provider[method].bind(provider) // have to bind to provider, otherwise this will be undefined
-      // const action_token: BeforeActionTokenType = `${fcrud_prefix}before-action-${action}`
-      // const options = getProtoMeta(target, action_token)
+      const query = provider[method].bind(provider) 
 
       const cfg = { option, target, fields, method }
       const decoratedMethod = this.configureMethod(cfg, query)
 
-      const route = fixRoute(option?.route ?? `/${action}`)
+      const route = fixRoute(option?.route_override ?? `/${action}`)
       router.setRoute(POST, route, async function (req, res) {
         await perform_task(req, decoratedMethod, res)
       })
@@ -140,10 +135,7 @@ export class FasterCrudService {
     cfg: ConfigCtx<T>,
     method: (data: any) => Promise<any>
   ) {
-    if (!cfg) {
-      return method
-    }
-    if (!cfg.option) {
+    if (!cfg || !cfg.option) {
       throw new Error(`options is not defined`)
     }
 
@@ -198,7 +190,7 @@ export class FasterCrudService {
       checkers: checkers as CheckerType[],
       pre_transformers: pre_transformers as TransformerType[],
       post_transformers: post_transformers as TransformerType[],
-      transform_after: transform_after_processor(ctx),
+      transform_after: after_transformer(ctx),
       hooks,
     }
   }

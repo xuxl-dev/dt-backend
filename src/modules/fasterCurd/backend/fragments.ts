@@ -13,12 +13,13 @@ export type TransformerType = (data: any) => any
 
 const form_requests: CRUDMethod[] = ['create', 'update', 'delete']
 const query_requests: CRUDMethod[] = ['read']
+
 function shape_checker({ option: options, method: action }: ConfigCtx) {
   const { rawInput } = options
   let check_shape: PendingCheckerType = IGNORE_ME
   if (!rawInput && form_requests.includes(action)) {
     check_shape = (data: any) => {
-      if (!(data.hasOwnProperty('form')||data.hasOwnProperty('row'))) {
+      if (!(data.hasOwnProperty('form') || data.hasOwnProperty('row'))) {
         throw new Error(`form/row not found, wrong input format`)
       }
     }
@@ -97,7 +98,7 @@ function expect_checker({ option: options }: ConfigCtx) {
       }
     }
   } else {
-    throw new Error("Unsupported assert")
+    throw new Error('Unsupported assert')
   }
   return check_expect
 }
@@ -175,7 +176,6 @@ function exactly_checker({ option: options }: ConfigCtx) {
   return check_requirements
 }
 
-
 function type_checker({ option: options, fields }: ConfigCtx) {
   const { checkType } = options
   let check_requirements: PendingCheckerType = IGNORE_ME
@@ -204,17 +204,32 @@ function type_checker({ option: options, fields }: ConfigCtx) {
   return check_requirements
 }
 
-function transform_return_processor({ option: options }: ConfigCtx) {
-  const { transformQueryReturn } = options
+function return_transformer({ option: options }: ConfigCtx) {
+  const { transformQueryRet, TransformQueryRetInplace, TransformRecordsInplace } = options
   let transform_query_return: PendingTransformerType = IGNORE_ME
-  if (transformQueryReturn) {
+  if (transformQueryRet) {
     //TODO add check for function
-    transform_query_return = transformQueryReturn
+    transform_query_return = transformQueryRet
   }
+
+  if (TransformQueryRetInplace) {
+    transform_query_return = (x) => {
+      TransformQueryRetInplace(x)
+      return x
+    }
+  }
+
+  if (TransformRecordsInplace) {
+    transform_query_return = (x) => {
+      x.records.forEach(TransformRecordsInplace)
+      return x
+    }
+  }
+
   return transform_query_return
 }
 
-function pre_transform_processor({ option: options }: ConfigCtx) {
+function pre_transformer({ option: options }: ConfigCtx) {
   const { transform } = options
   let transform_data: PendingTransformerType = IGNORE_ME
   if (transform) {
@@ -225,7 +240,7 @@ function pre_transform_processor({ option: options }: ConfigCtx) {
 }
 
 // this is a special one
-function transform_after_processor({ option: options, method: action }: ConfigCtx) {
+function after_transformer({ option: options, method: action }: ConfigCtx) {
   const { transformAfter } = options
   if (transformAfter) {
     // user's override, use it
@@ -292,12 +307,10 @@ export const checker_factories = [
 ]
 
 export const pre_transformer_factories = [
-  pre_transform_processor,
+  pre_transformer,
   // pagination_transformer,
 ]
 
-export const post_transformer_factories = [transform_return_processor]
+export const post_transformer_factories = [return_transformer]
 
-export { transform_after_processor }
-
-
+export { after_transformer }

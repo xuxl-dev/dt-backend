@@ -120,13 +120,15 @@ export type ActionOptions<T> = {
   }
   allow_sort?: FieldSelector<T>
   checkType?: boolean
-  // requires: FieldSelector<T>
-  // denies: FieldSelector<T>
-  // exactly: (keyof T)[] // Not support regex
-  route?: string
+  /**
+   * @deprecated
+   */
+  route_override?: string
   expect?: ((data: T) => boolean) | ((data: T) => boolean)[]
   transform?: (data: T) => T
-  transformQueryReturn?: (result: any) => any
+  transformQueryRet?: (result: any) => any
+  TransformQueryRetInplace?: (result: any) => any
+  TransformRecordsInplace?: (record: any) => any
   transformAfter?: (data: { form: T }, queryRet: any) => any
   onSuccess?: (data: T) => any
   onCheckFailure?: (data: T) => any
