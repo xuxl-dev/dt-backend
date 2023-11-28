@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
-import { Create, CRUD, IgnoreField, Read } from '../fc.decorators'
+import { Action, Create, CRUD, IgnoreField, Read } from '../fc.decorators'
 import { $ } from '../crud-gen/fast-crud.decorator'
 
 @Entity()
@@ -8,6 +8,14 @@ import { $ } from '../crud-gen/fast-crud.decorator'
   expect: (x) => x.name.length > 3,
 })
 @Read({ sort: { id: 'ASC' } })
+@Action({
+  action: 'abaaba',
+  method: 'read',
+  transformQueryReturn(x) {
+    return 6
+  },
+  rawInput: true,
+})
 @CRUD({ name: 'crud-user' })
 @IgnoreField(['id'])
 export class CRUDUser {

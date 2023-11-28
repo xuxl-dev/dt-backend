@@ -1,5 +1,6 @@
 import 'reflect-metadata'
 import {
+  BEFORE_ACTION_SUM_TOKEN,
   BeforeActionTokenType,
   ENTITY_NAME_TOKEN,
   FIELDS_TOKEN,
@@ -7,8 +8,12 @@ import {
   IGNORE_FIEIDS_TOKEN,
   fcrud_prefix,
 } from './backend/fc.tokens'
-import { getProtoMeta, setProtoMeta } from '../../utils/reflect.utils'
-import { CRUDMethods } from './backend/fc.tokens'
+import {
+  getProtoMeta,
+  mergeProtoMeta,
+  setProtoMeta,
+} from '../../utils/reflect.utils'
+import { CRUDMethod } from './backend/fc.tokens'
 import { FC } from './crud-gen/fast-crud.decorator'
 import { FastCrudFieldOptions } from './crud-gen/fast-crud.decl'
 import { applyDecorators } from '@nestjs/common'
@@ -57,7 +62,7 @@ export function FieldFC(
 
 type CURDOptions = {
   name: string
-  methods: CRUDMethods[]
+  methods: CRUDMethod[]
   exposeDict: boolean
 }
 
@@ -83,7 +88,9 @@ export function CRUD<T extends { new (...args: any[]): InstanceType<T> }>(
 
 type FieldSelector<T> = (keyof T)[] | RegExp
 
-export type Only<T, K extends keyof T> = { [P in keyof T]: P extends K ? T[P] : never }
+export type Only<T, K extends keyof T> = {
+  [P in keyof T]: P extends K ? T[P] : never
+}
 
 type FullShapeOptions<T> = {
   requires: FieldSelector<T>
@@ -96,76 +103,82 @@ type ShapeOptions<T> = Partial<
   | Only<FullShapeOptions<T>, 'exactly'>
 >
 
-export type BeforeActionOptions<T> = Partial<{
+export type ActionOptions<T> = {
+  action: string
+  method: CRUDMethod
   /**
    * if enabled, the input data will not be transformed
    * that means, pagination, sort, etc. will not be parsed
    */
-  rawInput: boolean
-  pagination: {
+  rawInput?: boolean
+  pagination?: {
     min?: number
     max: number
   }
-  sort: {
+  sort?: {
     [prop in keyof T]?: 'ASC' | 'DESC'
   }
-  allow_sort: FieldSelector<T>
-  checkType: boolean
+  allow_sort?: FieldSelector<T>
+  checkType?: boolean
   // requires: FieldSelector<T>
   // denies: FieldSelector<T>
   // exactly: (keyof T)[] // Not support regex
-  route: string
-  expect: ((data: T) => boolean) | ((data: T) => boolean)[]
-  transform: (data: T) => T
-  transformQueryReturn: (result: any) => any
-  transformAfter: (data: { form: T }, queryRet: any) => any
-  onSuccess: (data: T) => any
-  onCheckFailure: (data: T) => any
-  onTransformFailure: (data: T) => any
-  onExecFailure: (data: T) => any
-  ctx: object | null
-}> &
-  ShapeOptions<T>
+  route?: string
+  expect?: ((data: T) => boolean) | ((data: T) => boolean)[]
+  transform?: (data: T) => T
+  transformQueryReturn?: (result: any) => any
+  transformAfter?: (data: { form: T }, queryRet: any) => any
+  onSuccess?: (data: T) => any
+  onCheckFailure?: (data: T) => any
+  onTransformFailure?: (data: T) => any
+  onExecFailure?: (data: T) => any
+  ctx?: object | null
+} & ShapeOptions<T>
 
 export type ConfigCtx<T extends ObjectLiteral = any> = {
-  options: BeforeActionOptions<T>
+  option: ActionOptions<T>
   target: T
   fields: FieldOptionsObject
-  action: CRUDMethods
+  method: CRUDMethod
 }
 
-function BeforeAction<T extends abstract new (...args: any) => InstanceType<T>>(
-  action: CRUDMethods,
-  options: BeforeActionOptions<InstanceType<T>> = {}
+type PartialActionOptions<T> = Partial<ActionOptions<T>>
+
+export function Action<T extends abstract new (...args: any) => InstanceType<T>>(
+  options: ActionOptions<InstanceType<T>>
 ) {
   return function classDecorator(target: T) {
-    const token: BeforeActionTokenType = `${fcrud_prefix}before-action-${action}`
-    setProtoMeta(target, token, options)
+    // const token: BeforeActionTokenType = `${fcrud_prefix}before-action-${method}`
+    // setProtoMeta(target, token, options)
+
+    mergeProtoMeta(target, BEFORE_ACTION_SUM_TOKEN, {
+      [options.action ?? options.method]: options,
+    })
   }
 }
 
 export function Create<T extends ClassType<T>>(
-  options: BeforeActionOptions<InstanceType<T>> = {}
+  options: PartialActionOptions<InstanceType<T>>
 ) {
-  return BeforeAction<T>('create', options)
+  return Action<T>({ ...options, method: 'create', action: 'create' })
 }
 
 export function Read<T extends abstract new (...args: any) => InstanceType<T>>(
-  options: BeforeActionOptions<InstanceType<T>> = {}
+  options: PartialActionOptions<InstanceType<T>>
 ) {
-  return BeforeAction<T>('read', options)
+  return Action<T>({ ...options, method: 'read', action: 'read' })
 }
 
 export function Update<T extends ClassType<T>>(
-  options: BeforeActionOptions<InstanceType<T>> = {}
+  options: PartialActionOptions<InstanceType<T>>
 ) {
-  return BeforeAction<T>('update', options)
+  return Action<T>({ ...options, method: 'update', action: 'update' })
 }
 
 export function Delete<T extends ClassType<T>>(
-  options: BeforeActionOptions<InstanceType<T>> = {}
+  options: PartialActionOptions<InstanceType<T>>
 ) {
-  return BeforeAction<T>('delete', options)
+  return Action<T>({ ...options, method: 'delete', action: 'delete' })
 }
 
 export function IgnoreField<

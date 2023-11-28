@@ -2,10 +2,11 @@ import { Injectable, Logger } from '@nestjs/common'
 import { HttpAdapterHost } from '@nestjs/core'
 import { Express } from 'express'
 import express = require('express')
-import { BeforeActionOptions, ConfigCtx } from './fc.decorators'
+import { ActionOptions, ConfigCtx } from './fc.decorators'
 import {
+  BEFORE_ACTION_SUM_TOKEN,
   BeforeActionTokenType,
-  CRUDMethods,
+  CRUDMethod,
   FCRUD_GEN_CFG_TOKEN,
   FIELDS_TOKEN,
   HttpMethods,
@@ -78,19 +79,30 @@ export class FasterCrudService {
       .addPreMiddlewares(this.fCrudJwtMiddleware.FcrudJwtMiddleware)
       .addPostMiddlewares(exceptionMiddleware)
 
-    // create all CRUD routes
-    const actions: CRUDMethods[] =
+    const baseMethods: CRUDMethod[] =
       getProtoMeta(target, GEN_CRUD_METHOD_TOKEN) ?? defaultCrudMethod
+    const options: { [action: string]: ActionOptions<T> } = getProtoMeta(
+      target,
+      BEFORE_ACTION_SUM_TOKEN
+    )
+    // merge base methods
+    this.merge(baseMethods, options)
+
+    console.log(options)
 
     const docs: any = { crud: {}, dict }
-    for (const action of actions) {
-      const method = provider[action].bind(provider) // have to bind to provider, otherwise this will be undefined
-      const action_token: BeforeActionTokenType = `${fcrud_prefix}before-action-${action}`
-      const options = getProtoMeta(target, action_token)
-      const cfg = { options, target, fields, action }
-      const decoratedMethod = this.configureMethod(cfg, method)
+    for (const action of Object.keys(options)) {
+      console.log(action)
+      const option: ActionOptions<T> = options[action]
+      const method : CRUDMethod = option.method
+      const query = provider[method].bind(provider) // have to bind to provider, otherwise this will be undefined
+      // const action_token: BeforeActionTokenType = `${fcrud_prefix}before-action-${action}`
+      // const options = getProtoMeta(target, action_token)
 
-      const route = fixRoute(options?.route ?? `/${action}`)
+      const cfg = { option, target, fields, method }
+      const decoratedMethod = this.configureMethod(cfg, query)
+
+      const route = fixRoute(option?.route ?? `/${action}`)
       router.setRoute(POST, route, async function (req, res) {
         await perform_task(req, decoratedMethod, res)
       })
@@ -102,6 +114,16 @@ export class FasterCrudService {
     })
 
     this.addRouter(`${this.prefix}/${fcrudName}`, router.build())
+  }
+
+  private merge<T extends abstract new (...args: any) => InstanceType<T>>(baseMethods: CRUDMethod[], options: { [action: string]: ActionOptions<T> }) {
+    for (const method of baseMethods) {
+      if (!options[method]) {
+        options[method] = {
+          method, action: method
+        }
+      }
+    }
   }
 
   private parseEntityMeta<T extends ObjectLiteral>(entity: T) {
@@ -121,8 +143,8 @@ export class FasterCrudService {
     if (!cfg) {
       return method
     }
-    if (!cfg.options) {
-      cfg.options = {}
+    if (!cfg.option) {
+      throw new Error(`options is not defined`)
     }
 
     const {

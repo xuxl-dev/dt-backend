@@ -1,8 +1,9 @@
 import { ConfigCtx } from '../fc.decorators'
 import validatorMap from './validators'
 import { PageQuery } from '../crud-gen/fast-crud.decl'
-import { CRUDMethods } from './fc.tokens'
+import { CRUDMethod } from './fc.tokens'
 import { isEmptyObject } from 'src/utils/utils'
+import { isCallable } from 'src/utils/objectTools'
 
 export const IGNORE_ME = Symbol('ignore me')
 export type PendingCheckerType = ((data: any) => void) | typeof IGNORE_ME
@@ -10,22 +11,22 @@ export type CheckerType = (data: any) => void
 export type PendingTransformerType = ((data: any) => any) | typeof IGNORE_ME
 export type TransformerType = (data: any) => any
 
-const form_requests: CRUDMethods[] = ['create', 'update', 'delete']
-const query_requests: CRUDMethods[] = ['read']
-function shape_checker({ options, action }: ConfigCtx) {
+const form_requests: CRUDMethod[] = ['create', 'update', 'delete']
+const query_requests: CRUDMethod[] = ['read']
+function shape_checker({ option: options, method: action }: ConfigCtx) {
   const { rawInput } = options
   let check_shape: PendingCheckerType = IGNORE_ME
   if (!rawInput && form_requests.includes(action)) {
     check_shape = (data: any) => {
-      if (!data.hasOwnProperty('form')) {
-        throw new Error(`form not found, wrong input format`)
+      if (!(data.hasOwnProperty('form')||data.hasOwnProperty('row'))) {
+        throw new Error(`form/row not found, wrong input format`)
       }
     }
   }
   return check_shape
 }
 
-function pagination_checker({ options }: ConfigCtx) {
+function pagination_checker({ option: options }: ConfigCtx) {
   let check_pagination: PendingCheckerType = IGNORE_ME
   const { pagination } = options
   if (pagination) {
@@ -60,7 +61,7 @@ function pagination_checker({ options }: ConfigCtx) {
   return check_pagination
 }
 
-function sort_checker({ options }: ConfigCtx) {
+function sort_checker({ option: options }: ConfigCtx) {
   const { sort: default_sort } = options
   let check_sort: PendingCheckerType = IGNORE_ME
   if (default_sort) {
@@ -74,31 +75,34 @@ function sort_checker({ options }: ConfigCtx) {
   return check_sort
 }
 
-function except_checker({ options }: ConfigCtx) {
+function expect_checker({ option: options }: ConfigCtx) {
   //TODO sync this with requrie_checker
   const { expect } = options
   let check_expect: PendingCheckerType = IGNORE_ME
-  if (expect && Array.isArray(expect) && expect.length > 0) {
+  if (!expect) {
+    return check_expect
+  }
+  if (Array.isArray(expect) && expect.length > 0) {
     check_expect = ({ form }: any) => {
-      for (const field of expect) {
-        if (form.hasOwnProperty(field)) {
-          throw new Error(`Unexpected field ${String(field)}`)
+      for (const pred of expect) {
+        if (!pred(form)) {
+          throw new Error(`expect assert failed`)
         }
       }
     }
-  } else if (expect instanceof RegExp) {
+  } else if (!Array.isArray(expect) && isCallable(expect)) {
     check_expect = ({ form }: any) => {
-      for (const field in form) {
-        if (expect.test(field)) {
-          throw new Error(`Unexpected field ${String(field)}`)
-        }
+      if (!expect(form)) {
+        throw new Error(`expect assert failed`)
       }
     }
+  } else {
+    throw new Error("Unsupported assert")
   }
   return check_expect
 }
 
-function requrie_checker({ options, fields }: ConfigCtx) {
+function requrie_checker({ option: options, fields }: ConfigCtx) {
   const { requires } = options
   let check_requirements: PendingCheckerType = IGNORE_ME
   if (requires && Array.isArray(requires) && requires.length > 0) {
@@ -126,7 +130,7 @@ function requrie_checker({ options, fields }: ConfigCtx) {
   return check_requirements
 }
 
-function deny_checker({ options }: ConfigCtx) {
+function deny_checker({ option: options }: ConfigCtx) {
   //TODO sync this with requrie_checker
   const { denies } = options
   let check_requirements: PendingCheckerType = IGNORE_ME
@@ -151,7 +155,7 @@ function deny_checker({ options }: ConfigCtx) {
   return check_requirements
 }
 
-function exactly_checker({ options }: ConfigCtx) {
+function exactly_checker({ option: options }: ConfigCtx) {
   const { exactly } = options
   let check_requirements: PendingCheckerType = IGNORE_ME
   if (exactly && Array.isArray(exactly) && exactly.length > 0) {
@@ -171,7 +175,8 @@ function exactly_checker({ options }: ConfigCtx) {
   return check_requirements
 }
 
-function type_checker({ options, fields }: ConfigCtx) {
+
+function type_checker({ option: options, fields }: ConfigCtx) {
   const { checkType } = options
   let check_requirements: PendingCheckerType = IGNORE_ME
   if (checkType) {
@@ -199,7 +204,7 @@ function type_checker({ options, fields }: ConfigCtx) {
   return check_requirements
 }
 
-function transform_return_processor({ options }: ConfigCtx) {
+function transform_return_processor({ option: options }: ConfigCtx) {
   const { transformQueryReturn } = options
   let transform_query_return: PendingTransformerType = IGNORE_ME
   if (transformQueryReturn) {
@@ -209,7 +214,7 @@ function transform_return_processor({ options }: ConfigCtx) {
   return transform_query_return
 }
 
-function pre_transform_processor({ options }: ConfigCtx) {
+function pre_transform_processor({ option: options }: ConfigCtx) {
   const { transform } = options
   let transform_data: PendingTransformerType = IGNORE_ME
   if (transform) {
@@ -220,7 +225,7 @@ function pre_transform_processor({ options }: ConfigCtx) {
 }
 
 // this is a special one
-function transform_after_processor({ options, action }: ConfigCtx) {
+function transform_after_processor({ option: options, method: action }: ConfigCtx) {
   const { transformAfter } = options
   if (transformAfter) {
     // user's override, use it
@@ -280,7 +285,7 @@ export const checker_factories = [
   sort_checker,
   requrie_checker,
   deny_checker,
-  except_checker,
+  expect_checker,
   exactly_checker,
   pagination_checker,
   type_checker,
@@ -294,3 +299,5 @@ export const pre_transformer_factories = [
 export const post_transformer_factories = [transform_return_processor]
 
 export { transform_after_processor }
+
+

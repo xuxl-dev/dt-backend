@@ -16,7 +16,24 @@ export class TypeORMRepoAdapter<T extends ObjectLiteral>
 {
   constructor(private readonly repo: Repository<T>) {}
   async read(query: PageQuery<T>): Promise<PageRes<T>> {
-    // console.log(query)
+    console.log(query)
+    // if has no page
+    if (!query.page) {
+      const [ret, count] = await this.repo.findAndCount({
+        where: query.form,
+        order: this.parseSort<T>(query.sort) as any,
+      })
+      console.log(ret, count)
+      return {
+        records: ret,
+        currentPage: 1,
+        pageSize: count,
+        total: count,
+      }
+    }
+
+
+
     //TODO add convert
     const [ret, count] = await this.repo.findAndCount({
       where: query.form,
@@ -48,6 +65,9 @@ export class TypeORMRepoAdapter<T extends ObjectLiteral>
   parseSort<T>(sort: PageSort<T> | { [key in keyof T]?: 'ASC' | 'DESC' }): {
     [key in keyof T]?: 'ASC' | 'DESC'
   } {
+    if (!sort) {
+      return null
+    }
     if (Object.values(sort).every((v) => v === 'ASC' || v === 'DESC')) {
       //TODO clean up
       return sort as { [key in keyof T]?: 'ASC' | 'DESC' }
