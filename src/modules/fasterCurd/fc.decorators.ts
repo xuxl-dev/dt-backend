@@ -128,8 +128,11 @@ export type ActionOptions<T> = {
   transform?: (data: T) => T
   transformQueryRet?: (result: any) => any
   TransformQueryRetInplace?: (result: any) => any
-  TransformRecordsInplace?: (record: any) => any
-  transformAfter?: (data: { form: T }, queryRet: any) => any
+  TransformRecords?: never //TODO implement this
+  TransformRecordsInplace?: (record: T) => any
+  transformAfter?: (data: { form: T }, queryRet: any) => any 
+  //TODO make transformQueryRet TransformQueryRetInplace TransformRecords TransformRecordsInplace mutually exclusive
+  // Or find a proper order to execute them
   onSuccess?: (data: T) => any
   onCheckFailure?: (data: T) => any
   onTransformFailure?: (data: T) => any
