@@ -1,7 +1,7 @@
 import { ConfigCtx } from '../fc.decorators'
 import validatorMap from './validators'
 import { PageQuery } from '../crud-gen/fast-crud.decl'
-import { CRUDMethods } from './fc.tokens'
+import { CRUDMethod } from './fc.tokens'
 import { isEmptyObject } from 'src/utils/utils'
 
 export const IGNORE_ME = Symbol('ignore me')
@@ -10,8 +10,8 @@ export type CheckerType = (data: any) => void
 export type PendingTransformerType = ((data: any) => any) | typeof IGNORE_ME
 export type TransformerType = (data: any) => any
 
-const form_requests: CRUDMethods[] = ['create', 'update', 'delete']
-const query_requests: CRUDMethods[] = ['read']
+const form_requests: CRUDMethod[] = ['create', 'update', 'delete']
+const query_requests: CRUDMethod[] = ['read']
 function shape_checker({ options, action }: ConfigCtx) {
   const { rawInput } = options
   let check_shape: PendingCheckerType = IGNORE_ME

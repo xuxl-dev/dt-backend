@@ -5,10 +5,11 @@ import express = require('express')
 import { BeforeActionOptions, ConfigCtx } from './fc.decorators'
 import {
   BeforeActionTokenType,
-  CRUDMethods,
+  CRUDMethod,
   FCRUD_GEN_CFG_TOKEN,
   FIELDS_TOKEN,
-  HttpMethods,
+  GEN_CUSTOM_METHOD_TOKEN,
+  HttpMethod,
   fcrud_prefix,
 } from './backend/fc.tokens'
 import { ENTITY_NAME_TOKEN, GEN_CRUD_METHOD_TOKEN } from './backend/fc.tokens'
@@ -39,7 +40,7 @@ import {
   PageRes,
 } from './crud-gen/fast-crud.decl'
 const logger = new Logger('FasterCRUDService')
-const POST: HttpMethods = 'post'
+const POST: HttpMethod = 'post'
 @Injectable()
 export class FasterCrudService {
   prefix = `/dt-api`
@@ -79,18 +80,25 @@ export class FasterCrudService {
       .addPostMiddlewares(exceptionMiddleware)
 
     // create all CRUD routes
-    const actions: CRUDMethods[] =
-      getProtoMeta(target, GEN_CRUD_METHOD_TOKEN) ?? defaultCrudMethod
+    const actions: CRUDMethod[] = [
+      ...getProtoMeta(target, GEN_CRUD_METHOD_TOKEN) ?? defaultCrudMethod,
+      ...getProtoMeta(target, GEN_CUSTOM_METHOD_TOKEN)
+    ]
 
     const docs: any = { crud: {}, dict }
     for (const action of actions) {
-      const method = provider[action].bind(provider) // have to bind to provider, otherwise this will be undefined
       const action_token: BeforeActionTokenType = `${fcrud_prefix}before-action-${action}`
-      const options = getProtoMeta(target, action_token)
+      const options = getProtoMeta(target, action_token) as BeforeActionOptions<T>
+      // actions are crud, and costom ones.
+      const actionType = defaultCrudMethod[action] ?? options.action
+      if (!defaultCrudMethod.includes(actionType)) {
+        throw new Error("unsupported CRUD action")
+      }
+      const method = provider[action].bind(provider) // have to bind to provider, otherwise this will be undefined
       const cfg = { options, target, fields, action }
       const decoratedMethod = this.configureMethod(cfg, method)
 
-      const route = fixRoute(options?.route ?? `/${action}`)
+      const route = fixRoute(options.route ?? action)
       router.setRoute(POST, route, async function (req, res) {
         await perform_task(req, decoratedMethod, res)
       })

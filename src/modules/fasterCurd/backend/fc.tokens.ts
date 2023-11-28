@@ -1,16 +1,19 @@
 export const fcrud_prefix = `fcrud:`
-type fcrud_prefix_type = typeof fcrud_prefix
+type FcrudPrefixType = typeof fcrud_prefix
 export const ENTITY_NAME_TOKEN = `${fcrud_prefix}entity-name` //TODO deprecate this
 export const FIELDS_TOKEN = `${fcrud_prefix}fields` //TODO deprecate this
 export const GEN_CRUD_METHOD_TOKEN = `${fcrud_prefix}gen-crud-method` //TODO deprecate this
+export const GEN_CUSTOM_METHOD_TOKEN = `${fcrud_prefix}gen-custom-method` //TODO deprecate this
 export const IGNORE_FIEIDS_TOKEN = `${fcrud_prefix}ignore-fields` //TODO deprecate this
 export const CRUD_OPTION = `${fcrud_prefix}crud-option`
-export type HttpMethods = `get` | `post` | `put` | `delete` | `patch`
-export type CRUDMethods = `create` | `read` | `update` | `delete`
+export type HttpMethod = `get` | `post` | `put` | `delete` | `patch`
+export type CRUDMethod = `create` | `read` | `update` | `delete`
 export const BEFORE_ACTION_TOKEN = `${fcrud_prefix}before-action`
 export type BeforeActionTokenType =
-  `${fcrud_prefix_type}before-action-${CRUDMethods}`
-export const defaultCrudMethod: CRUDMethods[] = [
+  `${FcrudPrefixType}before-action-${CRUDMethod}`
+export const MergedActionToken =
+  `${fcrud_prefix}merged-before-action`
+export const defaultCrudMethod: CRUDMethod[] = [
   `create`,
   `read`,
   `update`,

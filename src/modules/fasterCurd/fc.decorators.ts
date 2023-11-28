@@ -5,10 +5,11 @@ import {
   FIELDS_TOKEN,
   GEN_CRUD_METHOD_TOKEN,
   IGNORE_FIEIDS_TOKEN,
+  MergedActionToken,
   fcrud_prefix,
 } from './backend/fc.tokens'
-import { getProtoMeta, setProtoMeta } from '../../utils/reflect.utils'
-import { CRUDMethods } from './backend/fc.tokens'
+import { getProtoMeta, mergeProtoMeta, setProtoMeta } from '../../utils/reflect.utils'
+import { CRUDMethod } from './backend/fc.tokens'
 import { FC } from './crud-gen/fast-crud.decorator'
 import { FastCrudFieldOptions } from './crud-gen/fast-crud.decl'
 import { applyDecorators } from '@nestjs/common'
@@ -57,11 +58,11 @@ export function FieldFC(
 
 type CURDOptions = {
   name: string
-  methods: CRUDMethods[]
+  methods: CRUDMethod[]
   exposeDict: boolean
 }
 
-export function CRUD<T extends { new (...args: any[]): InstanceType<T> }>(
+export function CRUD<T extends { new(...args: any[]): InstanceType<T> }>(
   options: Partial<CURDOptions> = {}
 ) {
   return function classDecorator(target: T) {
@@ -111,11 +112,20 @@ export type BeforeActionOptions<T> = Partial<{
   }
   allow_sort: FieldSelector<T>
   checkType: boolean
-  // requires: FieldSelector<T>
-  // denies: FieldSelector<T>
-  // exactly: (keyof T)[] // Not support regex
+  /**
+   * @deprecated
+   */
   route: string
+  /**
+   * endpoint name
+   */
+  naming: string
+  /**
+   * endpoint CRUD type
+   */
+  method: CRUDMethod
   expect: ((data: T) => boolean) | ((data: T) => boolean)[]
+  action: CRUDMethod
   transform: (data: T) => T
   transformQueryReturn: (result: any) => any
   transformAfter: (data: { form: T }, queryRet: any) => any
@@ -131,16 +141,23 @@ export type ConfigCtx<T extends ObjectLiteral = any> = {
   options: BeforeActionOptions<T>
   target: T
   fields: FieldOptionsObject
-  action: CRUDMethods
+  action: CRUDMethod
 }
 
 function BeforeAction<T extends abstract new (...args: any) => InstanceType<T>>(
-  action: CRUDMethods,
+  action: CRUDMethod,
   options: BeforeActionOptions<InstanceType<T>> = {}
 ) {
   return function classDecorator(target: T) {
     const token: BeforeActionTokenType = `${fcrud_prefix}before-action-${action}`
     setProtoMeta(target, token, options)
+    const naming = options.naming ?? action
+    mergeProtoMeta(target, MergedActionToken, {
+      [naming]: {
+        action,
+        options
+      }
+    })
   }
 }
 
@@ -169,7 +186,7 @@ export function Delete<T extends ClassType<T>>(
 }
 
 export function IgnoreField<
-  T extends { new (...args: any[]): InstanceType<T> }
+  T extends { new(...args: any[]): InstanceType<T> }
 >(li: (keyof InstanceType<T>)[]) {
   return (target: T) => {
     setProtoMeta(target, IGNORE_FIEIDS_TOKEN, li)
