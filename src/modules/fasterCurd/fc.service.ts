@@ -60,8 +60,7 @@ export class FasterCrudService {
     router.stack.forEach((r) => {
       if (r.route && r.route.path) {
         logger.debug(
-          `Mapped {${route}${
-            r.route.path
+          `Mapped {${route}${r.route.path
           }}, ${r.route.stack[0].method.toUpperCase()}} route`
         )
       }
@@ -91,10 +90,10 @@ export class FasterCrudService {
     const docs: any = { crud: {}, dict }
     for (const action of Object.keys(options)) {
       const option: ActionOptions<T> = options[action]
-      const method : CRUDMethod = option.method
-      const query = provider[method].bind(provider) 
+      const method: CRUDMethod = option.method
+      const query = provider[method].bind(provider)
 
-      const cfg = { option, target, fields, method }
+      const cfg: ConfigCtx<T> = { option, target, fields, action }
       const decoratedMethod = this.configureMethod(cfg, query)
 
       const route = fixRoute(option?.route_override ?? `/${action}`)
@@ -225,7 +224,7 @@ export class RouterBuilder {
   pre_middlewares: express.RequestHandler[] = []
   post_middlewares: express.RequestHandler[] = []
 
-  constructor() {}
+  constructor() { }
   setRoute(
     method: 'get' | 'post' | 'put' | 'delete' | 'patch',
     path: string,

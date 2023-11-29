@@ -1,7 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 import { Action, Create, CRUD, IgnoreField, Read } from '../fc.decorators'
 import { $ } from '../crud-gen/fast-crud.decorator'
-import { PageRes } from '../crud-gen/fast-crud.decl'
 
 @Entity()
 @Create({
@@ -13,7 +12,7 @@ import { PageRes } from '../crud-gen/fast-crud.decl'
   // transformQueryRet: (pageRes: PageRes<CRUDUser>) =>{pageRes.records.map((u: CRUDUser) => (u.name = u.name.toUpperCase())); return pageRes}
   // TransformQueryRetInplace: (pageRes: PageRes<CRUDUser>) =>
   //   pageRes.records.map((u: CRUDUser) => (u.name = u.name.toUpperCase())),
-  TransformRecordsInplace: (u) => (u.name = u.name.toUpperCase()),
+  TransformRecordsInplace: (u) => u.name = u.name.toUpperCase(),
 })
 @Action({
   method: 'read',

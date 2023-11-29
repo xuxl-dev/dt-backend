@@ -144,7 +144,7 @@ export type ConfigCtx<T extends ObjectLiteral = any> = {
   option: ActionOptions<T>
   target: T
   fields: FieldOptionsObject
-  method: CRUDMethod
+  action: string
 }
 
 type PartialActionOptions<T> = Partial<ActionOptions<T>>
