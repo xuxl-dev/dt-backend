@@ -13,6 +13,9 @@ import { $ } from '../crud-gen/fast-crud.decorator'
   // TransformQueryRetInplace: (pageRes: PageRes<CRUDUser>) =>
   //   pageRes.records.map((u: CRUDUser) => (u.name = u.name.toUpperCase())),
   TransformRecordsInplace: (u) => u.name = u.name.toUpperCase(),
+  onCheckFailure: (u) => {
+    throw new Error(`User ${u.name} is not allowed`)
+  }
 })
 @Action({
   method: 'read',
