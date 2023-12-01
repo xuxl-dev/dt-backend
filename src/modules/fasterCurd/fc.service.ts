@@ -157,20 +157,19 @@ export class FasterCrudService {
 
         log(`exec result:`, queryResult)
 
-        // queryResult = applyTransformers(post_transformers, queryResult)
         queryResult = await this.hooked(queryResult,
           (d) => applyTransformers(post_transformers, d),
           hooks.onPostTransformFailure)
 
         log(`transformed result:`, queryResult)
+
         const after = transform_after(data, queryResult)
         await hooks.onSuccess?.(after)
+
         log(`transformed after:`, after)
         return after
       } catch (e) {
         logger.error(`error when executing method ${method.name}:`, e)
-        // logger.debug(`error data:`, data)
-        // logger.debug(`stack:`, e.stack)
         throw new Error(e.message)
       }
     }
@@ -192,10 +191,9 @@ export class FasterCrudService {
       checker_factories,
       pre_transformer_factories,
       post_transformer_factories,
-    ].map((f) => {
+    ].map((fs) => fs.map((f) => f(ctx)).filter((item) => item !== IGNORE_ME)
       // get all products, and filter out empty ones
-      return f.map((f) => f(ctx)).filter((item) => item !== IGNORE_ME)
-    })
+    )
 
     const hooks = {
       onCheckFailure: ctx.option.onCheckFailure,
