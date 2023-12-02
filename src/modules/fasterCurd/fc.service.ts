@@ -5,12 +5,10 @@ import express = require('express')
 import { ActionOptions, ConfigCtx } from './fc.decorators'
 import {
   BEFORE_ACTION_SUM_TOKEN,
-  BeforeActionTokenType,
   CRUDMethod,
   FCRUD_GEN_CFG_TOKEN,
   FIELDS_TOKEN,
   HttpMethods,
-  fcrud_prefix,
 } from './backend/fc.tokens'
 import { ENTITY_NAME_TOKEN, GEN_CRUD_METHOD_TOKEN } from './backend/fc.tokens'
 import { getProtoMeta } from '../../utils/reflect.utils'
@@ -147,29 +145,44 @@ export class FasterCrudService {
     } = this.parseOptions(cfg)
     return async (data: any) => {
       try {
-        applyCheckers(checkers, data)
 
-        data = applyTransformers(pre_transformers, data)
+        await this.hooked(data, (d) => applyCheckers(checkers, d), hooks.onCheckFailure)
+
+        // data = applyTransformers(pre_transformers, data)
+        await this.hooked(data, (d) => applyTransformers(pre_transformers, d), hooks.onTransformFailure)
 
         log(`exec with data:`, data)
 
-        let queryResult = await method(data)
+        let queryResult = await this.hooked(data, method, hooks.onExecFailure)
 
         log(`exec result:`, queryResult)
 
-        queryResult = applyTransformers(post_transformers, queryResult)
+        queryResult = await this.hooked(queryResult,
+          (d) => applyTransformers(post_transformers, d),
+          hooks.onPostTransformFailure)
 
         log(`transformed result:`, queryResult)
+
         const after = transform_after(data, queryResult)
-        log(data, queryResult)
+        await hooks.onSuccess?.(after)
+
         log(`transformed after:`, after)
         return after
       } catch (e) {
         logger.error(`error when executing method ${method.name}:`, e)
-        // logger.debug(`error data:`, data)
-        // logger.debug(`stack:`, e.stack)
         throw new Error(e.message)
       }
+    }
+  }
+
+  private async hooked(data: any, action: (data: any) => any | Promise<any>, hook: (data: any) => any) {
+    try {
+      return await action(data)
+    } catch (e) {
+      if (hook) {
+        hook(data)
+      }
+      throw e
     }
   }
 
@@ -178,12 +191,17 @@ export class FasterCrudService {
       checker_factories,
       pre_transformer_factories,
       post_transformer_factories,
-    ].map((f) => {
+    ].map((fs) => fs.map((f) => f(ctx)).filter((item) => item !== IGNORE_ME)
       // get all products, and filter out empty ones
-      return f.map((f) => f(ctx)).filter((item) => item !== IGNORE_ME)
-    })
+    )
 
-    const hooks = [] //TODO: hooks are not implemented yet
+    const hooks = {
+      onCheckFailure: ctx.option.onCheckFailure,
+      onTransformFailure: ctx.option.onPreTransformFailure,
+      onExecFailure: ctx.option.onExecFailure,
+      onPostTransformFailure: ctx.option.onPostTransformFailure,
+      onSuccess: ctx.option.onSuccess,
+    }
 
     return {
       checkers: checkers as CheckerType[],

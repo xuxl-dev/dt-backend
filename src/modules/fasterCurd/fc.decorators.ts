@@ -155,10 +155,11 @@ export type ActionOptions<T> = {
   transformAfter?: (data: { form: T }, queryRet: any) => any 
   //TODO make transformQueryRet TransformQueryRetInplace TransformRecords TransformRecordsInplace mutually exclusive
   // Or find a proper order to execute them
-  onSuccess?: (data: T) => any
   onCheckFailure?: (data: T) => any
-  onTransformFailure?: (data: T) => any
+  onPreTransformFailure?: (data: T) => any
   onExecFailure?: (data: T) => any
+  onPostTransformFailure?: (data: T) => any
+  onSuccess?: (data: T) => any
   ctx?: object | null
 } & ShapeOptions<T>
 
