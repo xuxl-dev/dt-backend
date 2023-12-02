@@ -103,6 +103,28 @@ type ShapeOptions<T> = Partial<
   | Only<FullShapeOptions<T>, 'exactly'>
 >
 
+type FullTransformQurryRetOptions = {
+  transformQueryRet?: (result: any) => any
+  TransformQueryRetInplace?: (result: any) => any
+}
+
+type TransformQurryRetOptions = Partial<
+  | Only<FullTransformQurryRetOptions, 'transformQueryRet'>
+  | Only<FullTransformQurryRetOptions, 'TransformQueryRetInplace'>
+>
+
+type FullTransformRecordsOptions = {
+  TransformRecords?: (record: any) => any
+  TransformRecordsInplace?: (record: any) => any
+}
+
+type TransformRecordsOptions = Partial<
+  | Only<FullTransformRecordsOptions, 'TransformRecordsInplace'>
+  | Only<FullTransformRecordsOptions, 'TransformRecords'>
+>
+
+
+
 export type ActionOptions<T> = {
   action: string
   method: CRUDMethod
@@ -128,7 +150,7 @@ export type ActionOptions<T> = {
   transform?: (data: T) => T
   transformQueryRet?: (result: any) => any
   TransformQueryRetInplace?: (result: any) => any
-  TransformRecords?: never //TODO implement this
+  TransformRecords?: (record: any) => any
   TransformRecordsInplace?: (record: T) => any
   transformAfter?: (data: { form: T }, queryRet: any) => any 
   //TODO make transformQueryRet TransformQueryRetInplace TransformRecords TransformRecordsInplace mutually exclusive
