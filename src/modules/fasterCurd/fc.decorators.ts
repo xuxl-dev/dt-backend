@@ -13,12 +13,14 @@ import {
   mergeProtoMeta,
   setProtoMeta,
 } from '../../utils/reflect.utils'
-import { CRUDMethod } from './backend/fc.tokens'
+import { CRUDMethod } from "./backend/decl/base.decl"
 import { FC } from './crud-gen/fast-crud.decorator'
 import { FastCrudFieldOptions } from './crud-gen/fast-crud.decl'
 import { applyDecorators } from '@nestjs/common'
 import { ObjectLiteral } from './crud-gen/fast-crud.decl'
 import { ClassType } from 'src/utils/utils'
+import { Only } from 'src/utils/type.utils'
+import { CreateActionOption, LabeledActionOptions } from './backend/decl/action.decl'
 
 export type FieldOptions = Partial<{
   name: string
@@ -88,9 +90,6 @@ export function CRUD<T extends { new (...args: any[]): InstanceType<T> }>(
 
 type FieldSelector<T> = (keyof T)[] | RegExp
 
-export type Only<T, K extends keyof T> = {
-  [P in keyof T]: P extends K ? T[P] : never
-}
 
 type FullShapeOptions<T> = {
   requires: FieldSelector<T>
@@ -185,11 +184,34 @@ export function Action<
   }
 }
 
+export function Action2<
+  T extends abstract new (...args: any) => InstanceType<T>, K
+>(options: LabeledActionOptions<InstanceType<T>, K>) {
+  return function classDecorator(target: T) {
+    // const token: BeforeActionTokenType = `${fcrud_prefix}before-action-${method}`
+    // setProtoMeta(target, token, options)
+
+    mergeProtoMeta(target, BEFORE_ACTION_SUM_TOKEN, {
+      [options.action ?? options.method]: options,
+    })
+  }
+}
+
 export function Create<T extends ClassType<T>>(
   options: PartialActionOptions<InstanceType<T>>
 ) {
   return Action<T>({ ...options, method: 'create', action: 'create' })
 }
+
+
+type OmitActionType<T> = Omit<T, 'action' | 'method'>
+export function Create2<T extends ClassType<T>, K>(
+  options: OmitActionType<CreateActionOption<InstanceType<T>, K>>
+  // options: Omit<CreateActionOption<InstanceType<T>>, 'action'>
+) {
+  return Action2<T, K>({ ...options, method: 'create', action: 'create' })
+}
+
 
 export function Read<T extends abstract new (...args: any) => InstanceType<T>>(
   options: PartialActionOptions<InstanceType<T>>

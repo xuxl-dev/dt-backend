@@ -5,14 +5,13 @@ import express = require('express')
 import { ActionOptions, ConfigCtx } from './fc.decorators'
 import {
   BEFORE_ACTION_SUM_TOKEN,
-  CRUDMethod,
   FCRUD_GEN_CFG_TOKEN,
   FIELDS_TOKEN,
-  HttpMethods,
 } from './backend/fc.tokens'
+import { CRUDMethod, HttpMethods } from "./backend/decl/base.decl"
 import { ENTITY_NAME_TOKEN, GEN_CRUD_METHOD_TOKEN } from './backend/fc.tokens'
 import { getProtoMeta } from '../../utils/reflect.utils'
-import { defaultCrudMethod } from './backend/fc.tokens'
+import { defaultCrudMethod } from "./backend/decl/base.decl"
 import {
   CheckerType,
   IGNORE_ME,

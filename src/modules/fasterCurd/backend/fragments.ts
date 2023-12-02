@@ -1,7 +1,7 @@
 import { ConfigCtx } from '../fc.decorators'
 import validatorMap from './validators'
 import { PageQuery } from '../crud-gen/fast-crud.decl'
-import { CRUDMethod } from './fc.tokens'
+import { CRUDMethod } from "./decl/base.decl"
 import { isEmptyObject } from 'src/utils/utils'
 import { isCallable } from 'src/utils/objectTools'
 
