@@ -86,8 +86,8 @@ export namespace $ {
     )
   }
   export const NumberDictSelect = (
+    title: string,
     dictArr: string[],
-    title?: string,
     fcargs?: FastCrudFieldOptions,
     field_options?: FieldOptions
   ) => {

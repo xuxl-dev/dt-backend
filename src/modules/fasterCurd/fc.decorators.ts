@@ -123,7 +123,9 @@ type TransformRecordsOptions = Partial<
   | Only<FullTransformRecordsOptions, 'TransformRecords'>
 >
 
-
+type TransformOptions = Partial<
+  TransformQurryRetOptions | TransformRecordsOptions
+>
 
 export type ActionOptions<T> = {
   action: string
@@ -152,16 +154,14 @@ export type ActionOptions<T> = {
   TransformQueryRetInplace?: (result: any) => any
   TransformRecords?: (record: any) => any
   TransformRecordsInplace?: (record: T) => any
-  transformAfter?: (data: { form: T }, queryRet: any) => any 
-  //TODO make transformQueryRet TransformQueryRetInplace TransformRecords TransformRecordsInplace mutually exclusive
-  // Or find a proper order to execute them
+  transformAfter?: (data: { form: T }, queryRet: any) => any
   onCheckFailure?: (data: T) => any
   onPreTransformFailure?: (data: T) => any
   onExecFailure?: (data: T) => any
   onPostTransformFailure?: (data: T) => any
   onSuccess?: (data: T) => any
   ctx?: object | null
-} & ShapeOptions<T>
+} & ShapeOptions<T> & TransformOptions
 
 export type ConfigCtx<T extends ObjectLiteral = any> = {
   option: ActionOptions<T>
@@ -172,9 +172,9 @@ export type ConfigCtx<T extends ObjectLiteral = any> = {
 
 type PartialActionOptions<T> = Partial<ActionOptions<T>>
 
-export function Action<T extends abstract new (...args: any) => InstanceType<T>>(
-  options: ActionOptions<InstanceType<T>>
-) {
+export function Action<
+  T extends abstract new (...args: any) => InstanceType<T>
+>(options: ActionOptions<InstanceType<T>>) {
   return function classDecorator(target: T) {
     // const token: BeforeActionTokenType = `${fcrud_prefix}before-action-${method}`
     // setProtoMeta(target, token, options)
