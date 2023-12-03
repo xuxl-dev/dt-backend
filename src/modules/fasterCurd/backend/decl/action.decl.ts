@@ -172,8 +172,6 @@ export type FixedArray<T, N extends number> = GrowToSize<T, [], N>
 type arr<T extends number> = FixedArray<any, T>
 type StorageOf<T extends number> = TupleToStorage<arr<T>>
 
-type testType<U, V> = U extends V ? true : false
-
 export type LabeledActionOptions2<T, K> = CreateActionOption2<T, K>
 
 export function Action3<
@@ -192,11 +190,17 @@ type CreateTransformOption3<T, K> = {
   transformUpdateQueryRet?: (result: CreateResult) => K
   transformUpdateAfter?: (form: T, queryRet: K) => any
 }
+type TestTransform<T extends CreateTransformOption3<T, K>, K> = {
+  transformUpdateQueryRet?: (result: CreateResult) => K
+  transformUpdateAfter?: (
+    form: T,
+    queryRet: ReturnType<T['transformUpdateQueryRet']>
+  ) => any
+}
 
 export type CreateActionOption2<T, K> = {
   method: 'create'
-} & Partial<CreateTransformOption2<T, K>> &
-  Partial<CreateTransformOption3<T, K>>
+} & Partial<TestTransform<CreateTransformOption3<T, K>, K>> // & Partial<CreateTransformOption2<T, K>>
 
 type OptionType<T extends ClassType<T>, K> = Prettify<
   Partial<ExtendsOnly<K, OmitMethod<CreateActionOption2<InstanceType<T>, K>>>>
@@ -205,9 +209,8 @@ type OptionType<T extends ClassType<T>, K> = Prettify<
 
 type OmitMethod<T> = Omit<T, 'method'>
 export function Create3<T extends ClassType<T>, K>(
-  options: OptionType<T, K>
-  // options: K
-  // options: OmitMethod<CreateActionOption2<InstanceType<T>, K>>
+  // options: OptionType<T, K>
+  options: K
 ) {
   return Action3<T, K>({
     ...options,
@@ -221,39 +224,69 @@ export function Create3<T extends ClassType<T>, K>(
 //   transformUpdateAfter?: (form: T, queryRet: K) => any
 // }
 
-type AB<T> = {
-  a: () => T
-  b: (a:T) => any
-}
-
 export function Extract2<
   T extends abstract new (...args: any) => InstanceType<T>,
-  K extends tmp
->(options: Transform<K>) {
+  K
+>(options: K) {
   return function classDecorator(target: T) {}
 }
 
-type tmp = {
-  a: () => 666;
-  b: (b: any) => 2;
-}
-type Transform<T extends tmp> = {
-  a: () => 666;
-  b: (b: ReturnType<T['a']>) => 2;
-}
-type Transformed = Transform<tmp>
+type ExtractArgType<T> = T extends { b: (arg: infer U) => any } ? U : never
 
 @Create3({
-  transformQueryRet: (result) => '123',
-  transformAfter: (form, queryRet) => 213,
+  // transformQueryRet: (result) => '123',
+  // transformAfter: (form, queryRet) => 213,
+  transformUpdateAfter: (a, b) => '123',
+  transformUpdateQueryRet: (a) => '123',
   // transformUpdateQueryRet: (result) => 321,
 })
 @Extract2({
   a: () => 666,
-  b: (b) => 2,
+  b: (arg) => 2,
 })
 class TU {
   ids: number
   id: number
   name: string
 }
+
+const myFn = <T>(arg: {
+  a: (a_arg: number) => T
+  b: <U extends T>(b_arg: U) => void
+}) => {}
+
+myFn({
+  a: (a) => ({ num: 0 }),
+  b: (b_arg) => {
+    b_arg.num
+  }, // Works!
+})
+
+type inferrable<T> = T extends infer U ? U : never
+type inferrable2<T> = T extends { a: infer U } ? U : never
+type inferrable3<T> = T extends { a: (arg: infer U) => any } ? U : never
+type inferrable4<T> = T extends { a: (arg: infer U) => infer V } ? U : never
+type inferrable5<T> = T extends { a: (arg: infer U) => infer V } ? V : never
+type inferrable6<T> = T extends { a: (arg: infer U) => infer V }
+  ? [U, V]
+  : never
+
+type if6 = inferrable6<{ a: (arg: number) => string }>
+// b_arg should be return type of a
+// const myFn2 = <T extends { a: (arg: any) => any; b: (arg: ReturnType<T['a']>) => any }
+// >(
+//   arg: T
+// ) => {}
+
+// myFn2({
+//   a: (a:number) => ({a:1,b:2,c:3}),
+//   b: (a) => '123',
+// })
+function myFn2(arg: { a: (a: number) => { a: number; b: number; c: number }; b: (arg: { a: number; b: number; c: number }) => any }): void;
+function myFn2(arg: { a: (...args: any[]) => any; b: (arg: any) => any }): void;
+function myFn2(arg: any): void {}
+
+myFn2({
+  a: (a) => ({ a: 1, b: 2, c: 3 }),
+  b: (a) => '123',
+});
