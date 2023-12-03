@@ -25,14 +25,17 @@ import { $ } from '../crud-gen/fast-crud.decorator'
   transformQueryRet: () => 666,
   rawInput: true, // this prevents the form from being wrapped, ignores pagination & sort
 })
+// type ReturnType<T extends (...args: any) => any> = T extends (...args: any) => infer R ? R : any
 @Create2({
-  transformQueryRet: () => {
+  transformQueryRet: (result) => {
     return {
       'name': 'hello',
       'id': 114514
     }
   },
-  transformAfter: (form, queryRet) => {queryRet.id},
+  transformAfter: (form, queryRet) => {
+    console.log('transformAfter', form, queryRet)
+  },
 })
 @IgnoreField(['id'])
 @CRUD({ name: 'crud-user' })
