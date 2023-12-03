@@ -224,31 +224,10 @@ export function Create3<T extends ClassType<T>, K>(
 //   transformUpdateAfter?: (form: T, queryRet: K) => any
 // }
 
-export function Extract2<
-  T extends abstract new (...args: any) => InstanceType<T>,
-  K
->(options: K) {
-  return function classDecorator(target: T) {}
-}
-
-type ExtractArgType<T> = T extends { b: (arg: infer U) => any } ? U : never
-
-@Create3({
-  // transformQueryRet: (result) => '123',
-  // transformAfter: (form, queryRet) => 213,
-  transformUpdateAfter: (a, b) => '123',
-  transformUpdateQueryRet: (a) => '123',
-  // transformUpdateQueryRet: (result) => 321,
-})
-@Extract2({
-  a: () => 666,
-  b: (arg) => 2,
-})
-class TU {
-  ids: number
-  id: number
-  name: string
-}
+// type CreateTransformOption3<T, K> = {
+//   transformUpdateQueryRet?: (result: CreateResult) => K
+//   transformUpdateAfter?: (form: T, queryRet: K) => any
+// }
 
 const myFn = <T>(arg: {
   a: (a_arg: number) => T
@@ -262,31 +241,66 @@ myFn({
   }, // Works!
 })
 
-type inferrable<T> = T extends infer U ? U : never
-type inferrable2<T> = T extends { a: infer U } ? U : never
-type inferrable3<T> = T extends { a: (arg: infer U) => any } ? U : never
-type inferrable4<T> = T extends { a: (arg: infer U) => infer V } ? U : never
-type inferrable5<T> = T extends { a: (arg: infer U) => infer V } ? V : never
-type inferrable6<T> = T extends { a: (arg: infer U) => infer V }
-  ? [U, V]
-  : never
+type DemoDecoratorOptions<V extends DemoDecoratorOptions<V>> = {
+  a: () => ReturnType<V['a']>
+  b: (aResult: ReturnType<V['a']>) => number
+}
 
-type if6 = inferrable6<{ a: (arg: number) => string }>
-// b_arg should be return type of a
-// const myFn2 = <T extends { a: (arg: any) => any; b: (arg: ReturnType<T['a']>) => any }
-// >(
-//   arg: T
-// ) => {}
 
-// myFn2({
-//   a: (a:number) => ({a:1,b:2,c:3}),
-//   b: (a) => '123',
+
+export function Deco<
+  T extends abstract new (...args: any) => InstanceType<T>,
+  V extends DemoDecoratorOptions<V>
+>(options: V) {
+  return function classDecorator(target: T) {}
+}
+
+@Deco({
+  a: () => ({ c: 1 }),
+  b: (a) => 666,
+})
+class Demo {
+  ids: number
+  id: number
+  name: string
+}
+
+// type DemoDecoratorOptions<T> = {
+//   a: () => T;
+//   b: (aResult: T) => number;
+// };
+
+// export function Deco<T>(options: DemoDecoratorOptions<T>) {
+//   return function classDecorator(target: T) {}
+// }
+
+// @Deco({
+//   a: () => '123',
+//   b: (a) => 666, // 此处的类型符合约束
 // })
-function myFn2(arg: { a: (a: number) => { a: number; b: number; c: number }; b: (arg: { a: number; b: number; c: number }) => any }): void;
-function myFn2(arg: { a: (...args: any[]) => any; b: (arg: any) => any }): void;
-function myFn2(arg: any): void {}
+// class Demo {
+//   ids: number;
+//   id: number;
+//   name: string;
+// }
+type TransformKeys<T extends {a, b}> = {
+  [K in keyof T]: K extends 'b'
+    ? (arg: ReturnType<T['a']>) => ReturnType<T['b']>  // If the key is 'a', set the output type of 'b' to the output type of 'a'
+    : T[K];
+};
 
-myFn2({
-  a: (a) => ({ a: 1, b: 2, c: 3 }),
-  b: (a) => '123',
-});
+// Example usage
+type MyType = {
+  a: () => { result: number };
+  b: () => string;
+  c: boolean;
+};
+
+type TransformedType = TransformKeys<MyType>;
+
+// TransformedType will be:
+// {
+//   a: () => { result: number };
+//   b: () => string;  // 'b' input type is changed to 'a' output type
+//   c: boolean;
+// }
