@@ -264,14 +264,13 @@ export function Create3<T extends ClassType<T>, K>(
     action: 'create',
   })
 }
+type IsFunction<T> = T extends (...args: any) => any ? T : never
 
 type DemoTransformKeys2<T extends SubObject<T, 'a' | 'b'>> = {
   [K in keyof T]: K extends FieldName<T, 'b'>
     ? (
-        // @ts-expect-error
-        arg: ReturnType<T[FieldName<T, 'a'>]>
-        // @ts-expect-error
-      ) => ReturnType<T[FieldName<T, 'b'>]> // If the key is 'a', set the output type of 'b' to the output type of 'a'
+        arg: ReturnType<IsFunction<T[FieldName<T, 'a'>]>>
+      ) => ReturnType<IsFunction<T[FieldName<T, 'b'>]>> // If the key is 'a', set the output type of 'b' to the output type of 'a'
     : T[K]
 }
 
