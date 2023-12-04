@@ -252,6 +252,53 @@ export function Create3<T extends ClassType<T>, K>(
   })
 }
 
+
+
+
+
+
+
+type DemoTransformKeys2<T extends SubObject<T, 'a' | 'b'>> = {
+  [K in keyof T]: K extends FieldName<T, 'b'>
+  // @ts-expect-error
+  ? (arg: ReturnType<T[FieldName<T, 'a'>]>) => ReturnType<T[FieldName<T, 'b'>]>  // If the key is 'a', set the output type of 'b' to the output type of 'a'
+  : T[K];
+}
+
+type t = DemoTransformKeys2<{
+  a: ()=>123,
+  b: ()=>''
+}>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export function Action4<
+  T, K
+>(options: K) {
+  return function classDecorator(target: T) { }
+}
+
+@Action4({})
 @Create3({
   transformUpdateAfter: (a, b) => '666',
   transformUpdateQueryRet: (a) => 6,
