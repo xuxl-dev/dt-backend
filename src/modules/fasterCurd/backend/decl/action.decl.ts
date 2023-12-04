@@ -147,7 +147,7 @@ type ObjValueTuple<
 //
 type testStorage2 = TupleToStorage<[1, 2, {}]>
 type TupleToNamedObject<T extends any[]> = {
-  [K in T[number]as `#${K}`]: K
+  [K in T[number] as `#${K}`]: K
 }
 
 type TupleToStorage<T> = {
@@ -178,7 +178,7 @@ export function Action3<
   T extends abstract new (...args: any) => InstanceType<T>,
   K
 >(options: LabeledActionOptions2<InstanceType<T>, K>) {
-  return function classDecorator(target: T) { }
+  return function classDecorator(target: T) {}
 }
 
 type CreateTransformOption2<T, K> = {
@@ -209,15 +209,15 @@ type OptionType<T extends ClassType<T>, K> = Prettify<
 
 type FilterFunction<T, U> = T extends (...args: infer Args) => infer Return
   ? U extends (...args: any[]) => any
-  ? (...args: Args) => Return
+    ? (...args: Args) => Return
+    : never
   : never
-  : never;
 
 type SubObject<T, K extends keyof T> = {
-  [P in K]: T[P];
-};
+  [P in K]: T[P]
+}
 
-type FieldName<T, K extends keyof T> = K extends keyof T ? K : never;
+type FieldName<T, K extends keyof T> = K extends keyof T ? K : never
 
 // type DemoTransformKeys<T extends SubObject<T, 'transformUpdateAfter' | 'transformUpdateQueryRet'>> = {
 //   [K in keyof T]: K extends FieldName<T, 'transformUpdateQueryRet'>
@@ -225,16 +225,29 @@ type FieldName<T, K extends keyof T> = K extends keyof T ? K : never;
 //     : T[K];
 // };
 
-type DemoTransformKeys<T extends SubObject<T, 'transformUpdateAfter' | 'transformUpdateQueryRet'>> = {
+type DemoTransformKeys<
+  T extends SubObject<T, 'transformUpdateAfter' | 'transformUpdateQueryRet'>
+> = {
   [K in keyof T]: K extends FieldName<T, 'transformUpdateQueryRet'>
-  ? (arg: ReturnType<T[FieldName<T, 'transformUpdateAfter'>] & ((...args: any[]) => any)>) => ReturnType<T[FieldName<T, 'transformUpdateQueryRet'>] & ((...args: any[]) => any)>  // If the key is 'a', set the output type of 'b' to the output type of 'a'
-  : T[K];
+    ? (
+        arg: ReturnType<
+          T[FieldName<T, 'transformUpdateAfter'>] & ((...args: any[]) => any)
+        >
+      ) => ReturnType<
+        T[FieldName<T, 'transformUpdateQueryRet'>] & ((...args: any[]) => any)
+      > // If the key is 'a', set the output type of 'b' to the output type of 'a'
+    : T[K]
 }
 
-type opt = Prettify<OptionType<typeof Demo, {
-  transformUpdateAfter: (a: any, b: any) => void;
-  transformUpdateQueryRet: (a: any) => 6;
-}>> //FIXME
+type opt = Prettify<
+  OptionType<
+    typeof Demo,
+    {
+      transformUpdateAfter: (a: any, b: any) => void
+      transformUpdateQueryRet: (a: any) => 6
+    }
+  >
+> //FIXME
 
 type sub = SubObject<opt, 'transformUpdateAfter' | 'transformUpdateQueryRet'>
 
@@ -252,53 +265,40 @@ export function Create3<T extends ClassType<T>, K>(
   })
 }
 
-
-
-
-
-
-
 type DemoTransformKeys2<T extends SubObject<T, 'a' | 'b'>> = {
   [K in keyof T]: K extends FieldName<T, 'b'>
-  // @ts-expect-error
-  ? (arg: ReturnType<T[FieldName<T, 'a'>]>) => ReturnType<T[FieldName<T, 'b'>]>  // If the key is 'a', set the output type of 'b' to the output type of 'a'
-  : T[K];
+    ? (
+        // @ts-expect-error
+        arg: ReturnType<T[FieldName<T, 'a'>]>
+        // @ts-expect-error
+      ) => ReturnType<T[FieldName<T, 'b'>]> // If the key is 'a', set the output type of 'b' to the output type of 'a'
+    : T[K]
 }
 
 type t = DemoTransformKeys2<{
-  a: ()=>123,
-  b: ()=>''
+  a: () => 123
+  b: () => ''
 }>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-export function Action4<
-  T, K
->(options: K) {
-  return function classDecorator(target: T) { }
+type ActionOption = {
+  a: () => {
+    num: number
+  }
+  b: (arg) => string
 }
 
-@Action4({})
+export function Action4<T, K>(
+  options: ExtendsOnly<K, DemoTransformKeys2<ActionOption>>
+) {
+  return function classDecorator(target: T) {}
+}
+
+@Action4({
+  a: () => ({
+    num: 0,
+  }),
+  b: () => '',
+})
 @Create3({
   transformUpdateAfter: (a, b) => '666',
   transformUpdateQueryRet: (a) => 6,
@@ -334,8 +334,6 @@ class Demo {
 //   a: () => ReturnType<V['a']>
 //   b: (aResult: ReturnType<V['a']>) => number
 // }
-
-
 
 // export function Deco<
 //   T extends abstract new (...args: any) => InstanceType<T>,
