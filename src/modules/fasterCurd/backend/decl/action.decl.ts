@@ -147,7 +147,7 @@ type ObjValueTuple<
 //
 type testStorage2 = TupleToStorage<[1, 2, {}]>
 type TupleToNamedObject<T extends any[]> = {
-  [K in T[number] as `#${K}`]: K
+  [K in T[number]as `#${K}`]: K
 }
 
 type TupleToStorage<T> = {
@@ -178,7 +178,7 @@ export function Action3<
   T extends abstract new (...args: any) => InstanceType<T>,
   K
 >(options: LabeledActionOptions2<InstanceType<T>, K>) {
-  return function classDecorator(target: T) {}
+  return function classDecorator(target: T) { }
 }
 
 type CreateTransformOption2<T, K> = {
@@ -207,9 +207,42 @@ type OptionType<T extends ClassType<T>, K> = Prettify<
 > &
   Prettify<OmitMethod<CreateActionOption2<InstanceType<T>, K>>>
 
+type FilterFunction<T, U> = T extends (...args: infer Args) => infer Return
+  ? U extends (...args: any[]) => any
+  ? (...args: Args) => Return
+  : never
+  : never;
+
+type SubObject<T, K extends keyof T> = {
+  [P in K]: T[P];
+};
+
+type FieldName<T, K extends keyof T> = K extends keyof T ? K : never;
+
+// type DemoTransformKeys<T extends SubObject<T, 'transformUpdateAfter' | 'transformUpdateQueryRet'>> = {
+//   [K in keyof T]: K extends FieldName<T, 'transformUpdateQueryRet'>
+//     ? FilterFunction<T[K], (...args: any[]) => any>
+//     : T[K];
+// };
+
+type DemoTransformKeys<T extends SubObject<T, 'transformUpdateAfter' | 'transformUpdateQueryRet'>> = {
+  [K in keyof T]: K extends FieldName<T, 'transformUpdateQueryRet'>
+  ? (arg: ReturnType<T[FieldName<T, 'transformUpdateAfter'>] & ((...args: any[]) => any)>) => ReturnType<T[FieldName<T, 'transformUpdateQueryRet'>] & ((...args: any[]) => any)>  // If the key is 'a', set the output type of 'b' to the output type of 'a'
+  : T[K];
+}
+
+type opt = Prettify<OptionType<typeof Demo, {
+  transformUpdateAfter: (a: any, b: any) => void;
+  transformUpdateQueryRet: (a: any) => 6;
+}>> //FIXME
+
+type sub = SubObject<opt, 'transformUpdateAfter' | 'transformUpdateQueryRet'>
+
+type ts = Prettify<DemoTransformKeys<opt>>
+
 type OmitMethod<T> = Omit<T, 'method'>
 export function Create3<T extends ClassType<T>, K>(
-  // options: OptionType<T, K>
+  // options: K & DemoTransformKeys<OptionType<T, K>>
   options: K
 ) {
   return Action3<T, K>({
@@ -217,6 +250,15 @@ export function Create3<T extends ClassType<T>, K>(
     method: 'create',
     action: 'create',
   })
+}
+
+@Create3({
+  transformUpdateAfter: (a, b) => '666',
+  transformUpdateQueryRet: (a) => 6,
+})
+class Demo {
+  id: number
+  name: string
 }
 
 // type CreateTransformOption3<T> = <K>() => {
@@ -229,74 +271,69 @@ export function Create3<T extends ClassType<T>, K>(
 //   transformUpdateAfter?: (form: T, queryRet: K) => any
 // }
 
-const myFn = <T>(arg: {
-  a: (a_arg: number) => T
-  b: <U extends T>(b_arg: U) => void
-}) => {}
+// const myFn = <T>(arg: {
+//   a: (a_arg: number) => T
+//   b: <U extends T>(b_arg: U) => void
+// }) => { }
 
-myFn({
-  a: (a) => ({ num: 0 }),
-  b: (b_arg) => {
-    b_arg.num
-  }, // Works!
-})
+// myFn({
+//   a: (a) => ({ num: 0 }),
+//   b: (b_arg) => {
+//     b_arg.num
+//   }, // Works!
+// })
 
-type DemoDecoratorOptions<V extends DemoDecoratorOptions<V>> = {
-  a: () => ReturnType<V['a']>
-  b: (aResult: ReturnType<V['a']>) => number
-}
+// type DemoDecoratorOptions<V extends DemoDecoratorOptions<V>> = {
+//   a: () => ReturnType<V['a']>
+//   b: (aResult: ReturnType<V['a']>) => number
+// }
 
 
 
-export function Deco<
-  T extends abstract new (...args: any) => InstanceType<T>,
-  V extends DemoDecoratorOptions<V>
->(options: V) {
-  return function classDecorator(target: T) {}
-}
-
-@Deco({
-  a: () => ({ c: 1 }),
-  b: (a) => 666,
-})
-class Demo {
-  ids: number
-  id: number
-  name: string
-}
-
-// type DemoDecoratorOptions<T> = {
-//   a: () => T;
-//   b: (aResult: T) => number;
-// };
-
-// export function Deco<T>(options: DemoDecoratorOptions<T>) {
-//   return function classDecorator(target: T) {}
+// export function Deco<
+//   T extends abstract new (...args: any) => InstanceType<T>,
+//   V extends DemoDecoratorOptions<V>
+// >(options: V) {
+//   return function classDecorator(target: T) { }
 // }
 
 // @Deco({
-//   a: () => '123',
-//   b: (a) => 666, // 此处的类型符合约束
+//   a: () => ({ c: 1 }),
+//   b: (a) => 666,
 // })
 // class Demo {
-//   ids: number;
-//   id: number;
-//   name: string;
+//   a: () => ({ foo: 'bar' })
+//   b: () => 123
 // }
-type TransformKeys<T extends {a, b}> = {
-  [K in keyof T]: K extends 'b'
-    ? (arg: ReturnType<T['a']>) => ReturnType<T['b']>  // If the key is 'a', set the output type of 'b' to the output type of 'a'
-    : T[K];
-};
 
-// Example usage
-type MyType = {
-  a: () => { result: number };
-  b: () => string;
-  c: boolean;
-};
+// type SubObject<T, K extends keyof T> = {
+//   [P in K]: T[P];
+// };
 
-type TransformedType = TransformKeys<MyType>;
+// type FieldName<T, K extends keyof T> = K extends keyof T ? K : never
+
+// type DemoTransformKeys<T extends SubObject<Demo, 'a' | 'b'>> = {
+//   [K in keyof T]: K extends FieldName<Demo, 'b'>
+//   ? (arg: ReturnType<T[FieldName<Demo, 'a'>]>) => ReturnType<T[FieldName<Demo, 'b'>]>  // If the key is 'a', set the output type of 'b' to the output type of 'a'
+//   : T[K];
+// }
+
+// type pdt = Prettify<DemoTransformKeys<Demo>>
+
+// type TransformKeys<T extends { a?, b?}> = {
+//   [K in keyof T]: K extends 'b'
+//   ? (arg: ReturnType<T['a']>) => ReturnType<T['b']>  // If the key is 'a', set the output type of 'b' to the output type of 'a'
+//   : T[K];
+// };
+
+// // Example usage
+// type MyType = {
+//   a: () => { result: number };
+//   b: () => string;
+//   c: boolean;
+// };
+
+// type TransformedType = TransformKeys<MyType>;
 
 // TransformedType will be:
 // {
