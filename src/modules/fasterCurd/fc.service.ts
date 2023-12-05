@@ -2,16 +2,17 @@ import { Injectable, Logger } from '@nestjs/common'
 import { HttpAdapterHost } from '@nestjs/core'
 import { Express } from 'express'
 import express = require('express')
-import { ActionOptions, ConfigCtx } from './fc.decorators'
+import { ConfigCtx } from './fc.decorators'
 import {
   BEFORE_ACTION_SUM_TOKEN,
   FCRUD_GEN_CFG_TOKEN,
   FIELDS_TOKEN,
+  IGNORE_FIEIDS_TOKEN,
 } from './backend/fc.tokens'
-import { CRUDMethod, HttpMethods } from "./backend/decl/base.decl"
+import { CRUDMethod, HttpMethods } from './backend/decl/base.decl'
 import { ENTITY_NAME_TOKEN, GEN_CRUD_METHOD_TOKEN } from './backend/fc.tokens'
 import { getProtoMeta } from '../../utils/reflect.utils'
-import { defaultCrudMethod } from "./backend/decl/base.decl"
+import { defaultCrudMethod } from './backend/decl/base.decl'
 import {
   CheckerType,
   IGNORE_ME,
@@ -36,6 +37,7 @@ import {
   PageQuery,
   PageRes,
 } from './crud-gen/fast-crud.decl'
+import { LabeledActionOptions } from './backend/decl/action.decl'
 const logger = new Logger('FasterCRUDService')
 const POST: HttpMethods = 'post'
 @Injectable()
@@ -57,7 +59,8 @@ export class FasterCrudService {
     router.stack.forEach((r) => {
       if (r.route && r.route.path) {
         logger.debug(
-          `Mapped {${route}${r.route.path
+          `Mapped {${route}${
+            r.route.path
           }}, ${r.route.stack[0].method.toUpperCase()}} route`
         )
       }
@@ -77,16 +80,16 @@ export class FasterCrudService {
 
     const baseMethods: CRUDMethod[] =
       getProtoMeta(target, GEN_CRUD_METHOD_TOKEN) ?? defaultCrudMethod
-    const options: { [action: string]: ActionOptions<T> } = getProtoMeta(
+    const options: { [action: string]: LabeledActionOptions<T> } = getProtoMeta(
       target,
       BEFORE_ACTION_SUM_TOKEN
     )
     // merge base methods
     this.merge(baseMethods, options)
-
+    console.log(options)
     const docs: any = { crud: {}, dict }
     for (const action of Object.keys(options)) {
-      const option: ActionOptions<T> = options[action]
+      const option: LabeledActionOptions<T> = options[action]
       const method: CRUDMethod = option.method
       const query = provider[method].bind(provider)
 
@@ -107,11 +110,15 @@ export class FasterCrudService {
     this.addRouter(`${this.prefix}/${fcrudName}`, router.build())
   }
 
-  private merge<T extends abstract new (...args: any) => InstanceType<T>>(baseMethods: CRUDMethod[], options: { [action: string]: ActionOptions<T> }) {
+  private merge<T extends abstract new (...args: any) => InstanceType<T>>(
+    baseMethods: CRUDMethod[],
+    options: { [action: string]: LabeledActionOptions<T> }
+  ) {
     for (const method of baseMethods) {
       if (!options[method]) {
         options[method] = {
-          method, action: method
+          method,
+          action: method,
         }
       }
     }
@@ -122,6 +129,15 @@ export class FasterCrudService {
       getProtoMeta(entity, ENTITY_NAME_TOKEN) ?? entity.name
     ).toLowerCase()
     const fields = getProtoMeta(entity, FIELDS_TOKEN) ?? {}
+    const ignored = getProtoMeta(entity, IGNORE_FIEIDS_TOKEN) ?? []
+    // TODO clean this
+    // console.log(ignored)
+    // remove ignored fields
+    if (ignored && Array.isArray(ignored) && fields) {
+      for (const field of ignored) {
+        delete fields[field]
+      }
+    }
     const dict = getProtoMeta(entity, FCRUD_GEN_CFG_TOKEN) ?? {}
 
     return { dict, fcrudName, fields }
@@ -143,12 +159,20 @@ export class FasterCrudService {
       transform_after,
     } = this.parseOptions(cfg)
     return async (data: any) => {
+      console.log(data)
       try {
-
-        await this.hooked(data, (d) => applyCheckers(checkers, d), hooks.onCheckFailure)
-
+        await this.hooked(
+          data,
+          (d) => applyCheckers(checkers, d),
+          hooks.onCheckFailure
+        )
+        console.log(`checkers passed`)
         // data = applyTransformers(pre_transformers, data)
-        await this.hooked(data, (d) => applyTransformers(pre_transformers, d), hooks.onTransformFailure)
+        await this.hooked(
+          data,
+          (d) => applyTransformers(pre_transformers, d),
+          hooks.onTransformFailure
+        )
 
         log(`exec with data:`, data)
 
@@ -156,9 +180,11 @@ export class FasterCrudService {
 
         log(`exec result:`, queryResult)
 
-        queryResult = await this.hooked(queryResult,
+        queryResult = await this.hooked(
+          queryResult,
           (d) => applyTransformers(post_transformers, d),
-          hooks.onPostTransformFailure)
+          hooks.onPostTransformFailure
+        )
 
         log(`transformed result:`, queryResult)
 
@@ -174,7 +200,11 @@ export class FasterCrudService {
     }
   }
 
-  private async hooked(data: any, action: (data: any) => any | Promise<any>, hook: (data: any) => any) {
+  private async hooked(
+    data: any,
+    action: ((data:any) => any) | ((data:any) => Promise<any>),
+    hook: (data: any) => any
+  ) {
     try {
       return await action(data)
     } catch (e) {
@@ -190,7 +220,8 @@ export class FasterCrudService {
       checker_factories,
       pre_transformer_factories,
       post_transformer_factories,
-    ].map((fs) => fs.map((f) => f(ctx)).filter((item) => item !== IGNORE_ME)
+    ].map(
+      (fs) => fs.map((f) => f(ctx)).filter((item) => item !== IGNORE_ME)
       // get all products, and filter out empty ones
     )
 
@@ -226,6 +257,7 @@ function applyTransformers(post_transformers: TransformerType[], result: any) {
   for (const transformer of post_transformers) {
     result = transformer(result)
   }
+  console.log(result)
   return result
 }
 
@@ -241,7 +273,7 @@ export class RouterBuilder {
   pre_middlewares: express.RequestHandler[] = []
   post_middlewares: express.RequestHandler[] = []
 
-  constructor() { }
+  constructor() {}
   setRoute(
     method: 'get' | 'post' | 'put' | 'delete' | 'patch',
     path: string,

@@ -1,5 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 import {
+  // ActionEx,
   Action,
   // CreateEx,
   Create,
@@ -12,19 +13,18 @@ import { $ } from '../crud-gen/fast-crud.decorator'
 @Entity()
 @Read({
   sort: { id: 'ASC' },
-  TransformRecordsInplace: (u) => (u.name = u.name.toUpperCase()),
+  TransformRecordInplace: (u) => (u.name = u.name.toUpperCase()),
 })
 @Action({
   method: 'read',
   action: 'abaaba',
-  expect: (x) => x.name.length > 3,
   transformQueryRet: () => 666,
+  transformAfter: (data, queryRet) => queryRet,
   rawInput: true, // this prevents the form from being wrapped, ignores pagination & sort
 })
 @Create({
   requires: /.*/,
   denies: ['id'],
-  // exactly: ['name'],
   expect: [(x) => x.name.length >= 3, (x) => x.name.length <= 10],
   transformQueryRet: (result) => {
     return {
@@ -33,7 +33,8 @@ import { $ } from '../crud-gen/fast-crud.decorator'
     }
   },
   transformAfter: (form, queryRet) => {
-    console.log('transformAfter', form, queryRet)
+    // console.log('transformAfter', form, queryRet)
+    return queryRet
   },
 })
 @IgnoreField(['id'])

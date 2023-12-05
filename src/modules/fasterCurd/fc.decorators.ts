@@ -23,7 +23,13 @@ import { ExcludeNever, Only } from 'src/utils/type.utils'
 import {
   CreateActionOption,
   CreateOption,
+  DeleteActionOption,
+  DeleteOption,
   LabeledActionOptions,
+  ReadActionOption,
+  ReadOption,
+  UpdateActionOption,
+  UpdateOption,
 } from './backend/decl/action.decl'
 
 export type FieldOptions = Partial<{
@@ -89,113 +95,25 @@ export function CRUD<T extends { new (...args: any[]): InstanceType<T> }>(
       }
     }
     setProtoMeta(target, FIELDS_TOKEN, fields)
+    const methodConfigs = getProtoMeta(target, BEFORE_ACTION_SUM_TOKEN)
+    // console.log('CRUD', target.name, options, fields, methodConfigs)
   }
 }
 
-type FieldSelector<T> = (keyof T)[] | RegExp
 
-type FullShapeOptions<T> = {
-  requires: FieldSelector<T>
-  denies: FieldSelector<T>
-  exactly: (keyof T)[]
-}
-
-type ShapeOptions<T> = Partial<
-  | Only<FullShapeOptions<T>, 'requires' | 'denies'>
-  | Only<FullShapeOptions<T>, 'exactly'>
->
-
-type FullTransformQurryRetOptions = {
-  transformQueryRet?: (result: any) => any
-  TransformQueryRetInplace?: (result: any) => any
-}
-
-type TransformQurryRetOptions = Partial<
-  | Only<FullTransformQurryRetOptions, 'transformQueryRet'>
-  | Only<FullTransformQurryRetOptions, 'TransformQueryRetInplace'>
->
-
-type FullTransformRecordsOptions = {
-  TransformRecords?: (record: any) => any
-  TransformRecordsInplace?: (record: any) => any
-}
-
-type TransformRecordsOptions = Partial<
-  | Only<FullTransformRecordsOptions, 'TransformRecordsInplace'>
-  | Only<FullTransformRecordsOptions, 'TransformRecords'>
->
-
-type TransformOptions = Partial<
-  TransformQurryRetOptions &
-    TransformRecordsOptions & { transform?: (form: any) => any } & {
-      transformAfter?: (data: any, queryRet: any) => any
-    }
->
-
-type HookOptions<T> = {
-  onCheckFailure?: (data: T) => any
-  onPreTransformFailure?: (data: T) => any
-  onExecFailure?: (data: T) => any
-  onPostTransformFailure?: (data: T) => any
-  onSuccess?: (data: T) => any
-}
-
-export type ActionOptions<T> = {
-  action: string
-  method: CRUDMethod
-  /**
-   * if enabled, the input data will not be transformed
-   * that means, pagination, sort, etc. will not be parsed
-   */
-  rawInput?: boolean
-  pagination?: {
-    min?: number
-    max: number
-  }
-  sort?: {
-    [prop in keyof T]?: 'ASC' | 'DESC'
-  }
-  allow_sort?: FieldSelector<T>
-  checkType?: boolean
-  /**
-   * @deprecated
-   */
-  route_override?: string
-  expect?: ((data: T) => boolean) | ((data: T) => boolean)[]
-  ctx?: object | null
-} & ShapeOptions<T> &
-  TransformOptions &
-  HookOptions<T>
 
 export type ConfigCtx<T extends ObjectLiteral = any> = {
-  option: ActionOptions<T>
+  // option: ActionOptions<T>
+  option: LabeledActionOptions<T, any>
   target: T
   fields: FieldOptionsObject
   action: string
 }
 
-type PartialActionOptions<T> = Partial<ActionOptions<T>>
-
-export function Action<
-  T extends abstract new (...args: any) => InstanceType<T>
->(options: ActionOptions<InstanceType<T>>) {
-  return function classDecorator(target: T) {
-    // const token: BeforeActionTokenType = `${fcrud_prefix}before-action-${method}`
-    // setProtoMeta(target, token, options)
-
-    mergeProtoMeta(target, BEFORE_ACTION_SUM_TOKEN, {
-      [options.action ?? options.method]: options,
-    })
-  }
-}
-
-export function Action2<T extends ClassType<T>, K>(
+export function Action<T extends ClassType<T>, K>(
   options: LabeledActionOptions<InstanceType<T>, K>
 ) {
   return function classDecorator(target: T) {
-    // const token: BeforeActionTokenType = `${fcrud_prefix}before-action-${method}`
-    // setProtoMeta(target, token, options)
-
     mergeProtoMeta(target, BEFORE_ACTION_SUM_TOKEN, {
       [options.action ?? options.method]: options,
     })
@@ -205,29 +123,41 @@ export function Action2<T extends ClassType<T>, K>(
 export function Create<T extends ClassType<T>, K1>(
   options: CreateActionOption<InstanceType<T>, K1>
 ) {
-  return Action2<T, K1>({
+  return Action<T, K1>({
     ...options,
     method: 'create',
     action: 'create',
   } as CreateOption<InstanceType<T>, K1>)
 }
 
-export function Read<T extends abstract new (...args: any) => InstanceType<T>>(
-  options: PartialActionOptions<InstanceType<T>>
+export function Read<T extends ClassType<T>, K1>(
+  options: ReadActionOption<InstanceType<T>, K1>
 ) {
-  return Action<T>({ ...options, method: 'read', action: 'read' })
+  return Action<T, K1>({
+    ...options,
+    method: 'read',
+    action: 'read',
+  } as ReadOption<InstanceType<T>, K1>)
 }
 
-export function Update<T extends ClassType<T>>(
-  options: PartialActionOptions<InstanceType<T>>
+export function Update<T extends ClassType<T>, K1>(
+  options: UpdateActionOption<InstanceType<T>, K1>
 ) {
-  return Action<T>({ ...options, method: 'update', action: 'update' })
+  return Action<T, K1>({
+    ...options,
+    method: 'update',
+    action: 'update',
+  } as UpdateOption<InstanceType<T>, K1>)
 }
 
-export function Delete<T extends ClassType<T>>(
-  options: PartialActionOptions<InstanceType<T>>
+export function Delete<T extends ClassType<T>, K1>(
+  options: DeleteActionOption<InstanceType<T>, K1>
 ) {
-  return Action<T>({ ...options, method: 'delete', action: 'delete' })
+  return Action<T, K1>({
+    ...options,
+    method: 'delete',
+    action: 'delete',
+  } as DeleteOption<InstanceType<T>, K1>)
 }
 
 export function IgnoreField<

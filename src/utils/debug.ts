@@ -1,4 +1,4 @@
-let debug = false
+let debug = true
 
 export function setDebug(value: boolean) {
   debug = value

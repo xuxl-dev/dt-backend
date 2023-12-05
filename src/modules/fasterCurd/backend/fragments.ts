@@ -1,7 +1,7 @@
 import { ConfigCtx } from '../fc.decorators'
 import validatorMap from './validators'
 import { PageQuery } from '../crud-gen/fast-crud.decl'
-import { CRUDMethod } from "./decl/base.decl"
+import { CRUDMethod } from './decl/base.decl'
 import { isEmptyObject } from 'src/utils/utils'
 import { isCallable } from 'src/utils/objectTools'
 
@@ -29,6 +29,9 @@ function shape_checker({ option: option, action: action }: ConfigCtx) {
 
 function pagination_checker({ option }: ConfigCtx) {
   let check_pagination: PendingCheckerType = IGNORE_ME
+  if (option.method !== 'read') {
+    return check_pagination
+  }
   const { pagination, rawInput } = option
   if (pagination && !rawInput) {
     check_pagination = ({ page }: PageQuery) => {
@@ -63,8 +66,11 @@ function pagination_checker({ option }: ConfigCtx) {
 }
 
 function sort_checker({ option }: ConfigCtx) {
-  const { sort: default_sort, rawInput } = option
   let check_sort: PendingCheckerType = IGNORE_ME
+  if (option.method !== 'read') {
+    return check_sort
+  }
+  const { sort: default_sort, rawInput } = option
   if (default_sort && !rawInput) {
     check_sort = (query: PageQuery) => {
       const { sort } = query
@@ -110,14 +116,14 @@ function requrie_checker({ option, fields }: ConfigCtx) {
     check_requirements = ({ form }: any) => {
       for (const field of requires) {
         if (!form.hasOwnProperty(field)) {
-          throw new Error(`Missing field ${String(field)} form`)
+          throw new Error(`Missing field ${String(field)} in form`)
         }
       }
     }
   } else if (requires instanceof RegExp) {
     check_requirements = ({ form }: any) => {
       for (const [name, field] of Object.entries(fields)) {
-        // console.log(name, field)
+        console.log(name, field)
         if (
           requires.test(name) &&
           !form.hasOwnProperty(name) &&
@@ -205,8 +211,16 @@ function type_checker({ option, fields }: ConfigCtx) {
 }
 
 function return_transformer({ option }: ConfigCtx) {
-  const { transformQueryRet, TransformQueryRetInplace, TransformRecordsInplace } = option
   let transform_query_return: PendingTransformerType = IGNORE_ME
+
+  // if (option.method !== 'read') {
+  //   return transform_query_return
+  // }
+  const {
+    transformQueryRet,
+    TransformQueryRetInplace,
+
+  } = option
   if (transformQueryRet) {
     //TODO add check for function
     transform_query_return = transformQueryRet
@@ -219,13 +233,17 @@ function return_transformer({ option }: ConfigCtx) {
     }
   }
 
-  if (TransformRecordsInplace) {
-    transform_query_return = (x) => {
-      x.records.forEach(TransformRecordsInplace)
-      return x
+  //TODO extract this!
+  if (option.method === 'read') {
+    const {TransformRecordInplace} = option 
+    if (TransformRecordInplace) {
+      transform_query_return = (x) => {
+        x.records.forEach(TransformRecordInplace)
+        return x
+      }
     }
   }
-
+  
   return transform_query_return
 }
 
@@ -263,7 +281,6 @@ function after_transformer({ option, action }: ConfigCtx) {
 
   return transform_after
 }
-
 
 export const checker_factories = [
   shape_checker,

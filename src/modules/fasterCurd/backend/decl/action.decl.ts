@@ -139,7 +139,7 @@ export type SortOption<T> = {
   allow_sort?: FieldsOrReg<T>
 }
 
-type ReadActionOption<T, K1> = OptionalBaseOption<T> &
+export type ReadActionOption<T, K1> = OptionalBaseOption<T> &
   Partial<ReadHookOption<T>> &
   Partial<ReadTransformOption<T>> &
   Partial<ShapeOptions<T>> &
@@ -151,7 +151,7 @@ export type ReadOption<T, K1> = ReadActionOption<T, K1> & {
   method: 'read'
 }
 
-type UpdateActionOption<T, K1> = OptionalBaseOption<T> &
+export type UpdateActionOption<T, K1> = OptionalBaseOption<T> &
   Partial<UpdateTransformOption<T>> &
   Partial<UpdateHookOption<T>> &
   Partial<ShapeOptions<T>>
@@ -161,7 +161,7 @@ export type UpdateOption<T, K1> = UpdateActionOption<T, K1> & {
   method: 'update'
 }
 
-type DeleteActionOption<T, K1> = OptionalBaseOption<T> &
+export type DeleteActionOption<T, K1> = OptionalBaseOption<T> &
   Partial<DeleteTransformOption<T>> &
   Partial<DeleteHookOption<T>> &
   Partial<ShapeOptions<T>>
