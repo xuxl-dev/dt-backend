@@ -5,6 +5,7 @@ import {
   // CreateEx,
   Create,
   CRUD,
+  Delete,
   IgnoreField,
   Read,
 } from '../fc.decorators'
@@ -28,13 +29,20 @@ import { $ } from '../crud-gen/fast-crud.decorator'
   expect: [(x) => x.name.length >= 3, (x) => x.name.length <= 10],
   transformQueryRet: (result) => {
     return {
-      'name': 'hello',
-      'id': 114514
+      name: 'hello',
+      id: 114514,
     }
   },
   transformAfter: (form, queryRet) => {
     // console.log('transformAfter', form, queryRet)
     return queryRet
+  },
+})
+@Delete({
+  transform: (data) => {
+    // delete data.row.name to eliminate effect of TransformRecordInplace 
+    // (if name is uppercased, can't find in db)
+    delete data.row.name
   },
 })
 @IgnoreField(['id'])

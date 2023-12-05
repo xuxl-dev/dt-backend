@@ -82,6 +82,11 @@ type ReadTransformOption<T> = {
   transformQueryRet?: (result: any) => any
   TransformQueryRetInplace?: (result: any) => any
   TransformRecords?: (records: T[]) => T[]
+  /**
+   * This may affect delete (by changing the records to be deleted)
+   * @param record
+   * @returns
+   */
   TransformRecordInplace?: (record: T) => void
   transformAfter?: (data: { form: any }, queryRet: any) => any
 }
@@ -94,7 +99,7 @@ type UpdateTransformOption<T> = {
   transformAfter?: (data: { form: T }, queryRet: any) => any
 }
 type DeleteTransformOption<T> = {
-  transform?: (data: T) => T
+  transform?: (data: { row: T }) => Partial<T> | any
   transformQueryRet?: (result: any) => any
   TransformQueryRetInplace?: (result: any) => any
   TransformRecords?: (record: any) => any

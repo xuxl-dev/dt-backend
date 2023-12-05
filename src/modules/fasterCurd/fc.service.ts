@@ -159,14 +159,13 @@ export class FasterCrudService {
       transform_after,
     } = this.parseOptions(cfg)
     return async (data: any) => {
-      console.log(data)
       try {
         await this.hooked(
           data,
           (d) => applyCheckers(checkers, d),
           hooks.onCheckFailure
         )
-        console.log(`checkers passed`)
+        
         // data = applyTransformers(pre_transformers, data)
         await this.hooked(
           data,
@@ -257,7 +256,6 @@ function applyTransformers(post_transformers: TransformerType[], result: any) {
   for (const transformer of post_transformers) {
     result = transformer(result)
   }
-  console.log(result)
   return result
 }
 
