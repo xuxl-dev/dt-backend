@@ -8,8 +8,8 @@ import { ClassType } from 'src/utils/utils'
 
 type ActionName = string
 
-export type LabeledActionOptions<T, K> =
-  | CreateActionOption<T, K>
+export type LabeledActionOptions<T> =
+  | CreateActionOption<T>
   | ReadActionOption<T>
   | UpdateActionOption<T>
   | DeleteActionOption<T>
@@ -58,11 +58,11 @@ type DeleteResult = TODO
  * T: the entity type
  * K: the user input type (config)
  */
-type CreateTransformOption<T, K1> = {
+type CreateTransformOption<T> = {
   transform?: (form: T) => T
   TransformQueryRetInplace?: (result: CreateResult) => void
-  transformQueryRet?: (result: CreateResult) => K1
-  transformAfter?: (form: T, queryRet: K1) => any
+  transformQueryRet?: (result: CreateResult) => any
+  transformAfter?: (form: T, queryRet: any) => any
 }
 
 type ElementOf<T> = T extends Array<infer E> ? E : never
@@ -97,9 +97,9 @@ type ReadHookOption<T> = {}
 type UpdateHookOption<T> = {}
 type DeleteHookOption<T> = {}
 
-export type CreateActionOption<T, K> = ActionBaseOption<T> & {
+export type CreateActionOption<T> = ActionBaseOption<T> & {
   method: 'create'
-} & Partial<CreateTransformOption<T, K>> &
+} & Partial<CreateTransformOption<T>> &
   Partial<CreateHookOption<T>>
 
 type ReadActionOption<T> = ActionBaseOption<T> & {
@@ -113,6 +113,7 @@ type UpdateActionOption<T> = ActionBaseOption<T> & {
 type DeleteActionOption<T> = ActionBaseOption<T> & {
   method: 'delete'
 }
+
 type TupleToObject<T extends readonly any[]> = {
   [K in T[number]]: T[number]
 }
@@ -144,8 +145,6 @@ type ObjValueTuple<
   ? ObjValueTuple<T, KT, [...R, T[K & keyof T]]>
   : R
 
-//
-type testStorage2 = TupleToStorage<[1, 2, {}]>
 type TupleToNamedObject<T extends any[]> = {
   [K in T[number] as `#${K}`]: K
 }
@@ -153,7 +152,6 @@ type TupleToNamedObject<T extends any[]> = {
 type TupleToStorage<T> = {
   [K in keyof T as `_${Exclude<K, keyof Array<any>> & string}`]: T[K]
 }
-type test = ObjValueTuple<{ a: 1; b: 22; c: 3 }>
 
 type StorageOfObj<T> = TupleToStorage<ObjValueTuple<T>>
 // type StorageOfN<T extends number> = TupleToStorage<ObjValueTuple<T>>
@@ -172,14 +170,6 @@ export type FixedArray<T, N extends number> = GrowToSize<T, [], N>
 type arr<T extends number> = FixedArray<any, T>
 type StorageOf<T extends number> = TupleToStorage<arr<T>>
 
-export type LabeledActionOptions2<T, K> = CreateActionOption2<T, K>
-
-export function Action3<
-  T extends abstract new (...args: any) => InstanceType<T>,
-  K
->(options: LabeledActionOptions2<InstanceType<T>, K>) {
-  return function classDecorator(target: T) {}
-}
 
 type CreateTransformOption2<T, K> = {
   transformQueryRet?: (result: CreateResult) => K
@@ -190,28 +180,6 @@ type CreateTransformOption3<T, K> = {
   transformUpdateQueryRet?: (result: CreateResult) => K
   transformUpdateAfter?: (form: T, queryRet: K) => any
 }
-type TestTransform<T extends CreateTransformOption3<T, K>, K> = {
-  transformUpdateQueryRet?: (result: CreateResult) => K
-  transformUpdateAfter?: (
-    form: T,
-    queryRet: ReturnType<T['transformUpdateQueryRet']>
-  ) => any
-}
-
-export type CreateActionOption2<T, K> = {
-  method: 'create'
-} & Partial<TestTransform<CreateTransformOption3<T, K>, K>> // & Partial<CreateTransformOption2<T, K>>
-
-type OptionType<T extends ClassType<T>, K> = Prettify<
-  Partial<ExtendsOnly<K, OmitMethod<CreateActionOption2<InstanceType<T>, K>>>>
-> &
-  Prettify<OmitMethod<CreateActionOption2<InstanceType<T>, K>>>
-
-type FilterFunction<T, U> = T extends (...args: infer Args) => infer Return
-  ? U extends (...args: any[]) => any
-    ? (...args: Args) => Return
-    : never
-  : never
 
 type SubObject<T, K extends keyof T> = {
   [P in K]: T[P]
@@ -219,51 +187,6 @@ type SubObject<T, K extends keyof T> = {
 
 type FieldName<T, K extends keyof T> = K extends keyof T ? K : never
 
-// type DemoTransformKeys<T extends SubObject<T, 'transformUpdateAfter' | 'transformUpdateQueryRet'>> = {
-//   [K in keyof T]: K extends FieldName<T, 'transformUpdateQueryRet'>
-//     ? FilterFunction<T[K], (...args: any[]) => any>
-//     : T[K];
-// };
-
-type DemoTransformKeys<
-  T extends SubObject<T, 'transformUpdateAfter' | 'transformUpdateQueryRet'>
-> = {
-  [K in keyof T]: K extends FieldName<T, 'transformUpdateQueryRet'>
-    ? (
-        arg: ReturnType<
-          T[FieldName<T, 'transformUpdateAfter'>] & ((...args: any[]) => any)
-        >
-      ) => ReturnType<
-        T[FieldName<T, 'transformUpdateQueryRet'>] & ((...args: any[]) => any)
-      > // If the key is 'a', set the output type of 'b' to the output type of 'a'
-    : T[K]
-}
-
-type opt = Prettify<
-  OptionType<
-    typeof Demo,
-    {
-      transformUpdateAfter: (a: any, b: any) => void
-      transformUpdateQueryRet: (a: any) => 6
-    }
-  >
-> //FIXME
-
-type sub = SubObject<opt, 'transformUpdateAfter' | 'transformUpdateQueryRet'>
-
-type ts = Prettify<DemoTransformKeys<opt>>
-
-type OmitMethod<T> = Omit<T, 'method'>
-export function Create3<T extends ClassType<T>, K>(
-  // options: K & DemoTransformKeys<OptionType<T, K>>
-  options: K
-) {
-  return Action3<T, K>({
-    ...options,
-    method: 'create',
-    action: 'create',
-  })
-}
 type IsFunction<T> = T extends (...args: any) => any ? T : never
 
 type DemoTransformKeys2<T extends SubObject<T, 'a' | 'b'>> = {
@@ -274,20 +197,21 @@ type DemoTransformKeys2<T extends SubObject<T, 'a' | 'b'>> = {
     : T[K]
 }
 
-type t = DemoTransformKeys2<{
-  a: () => 123
-  b: () => ''
-}>
 
-type ActionOption = {
-  a: () => {
+type CreateOption<T> = {
+  method: 'create'
+  a?: () => {
     num: number
   }
-  b: (arg) => string
+  b?: (arg) => string
+  transform?: (form: T) => T
+  TransformQueryRetInplace?: (result: CreateResult) => void
+  transformQueryRet?: (result: CreateResult) => any
+  transformAfter?: (form: T, queryRet: any) => any
 }
 
-export function Action4<T, K>(
-  options: ExtendsOnly<K, DemoTransformKeys2<ActionOption>>
+export function Action4<T>(
+  options: DemoTransformKeys2<Partial<CreateOption<T>>>
 ) {
   return function classDecorator(target: T) {}
 }
@@ -296,12 +220,9 @@ export function Action4<T, K>(
   a: () => ({
     num: 0,
   }),
-  b: () => '',
+  b: (arg) => '666',
 })
-@Create3({
-  transformUpdateAfter: (a, b) => '666',
-  transformUpdateQueryRet: (a) => 6,
-})
+
 class Demo {
   id: number
   name: string
