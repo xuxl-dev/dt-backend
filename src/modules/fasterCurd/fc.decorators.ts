@@ -126,7 +126,10 @@ type TransformRecordsOptions = Partial<
 >
 
 type TransformOptions = Partial<
-  TransformQurryRetOptions | TransformRecordsOptions
+  TransformQurryRetOptions &
+    TransformRecordsOptions & { transform?: (form: any) => any } & {
+      transformAfter?: (data: any, queryRet: any) => any
+    }
 >
 
 type HookOptions<T> = {
