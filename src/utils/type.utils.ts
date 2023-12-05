@@ -2,6 +2,10 @@ export type Only<T, K extends keyof T> = {
   [P in keyof T]: P extends K ? T[P] : never
 }
 
+export type Never<T> = {
+  [P in keyof T]: never
+}
+
 export type OnlyOneOf<T> = {
   [P in keyof T]: T[P] extends any[] ? T[P] : never
 }[keyof T]
@@ -36,7 +40,7 @@ export type ExtendsOnly<T, U> = ExcludeNever<{
 
 
 
-type ExcludeNever<T> = {
+export type ExcludeNever<T> = {
   [K in keyof T as T[K] extends never ? never : K]: T[K]
 }
 
@@ -94,9 +98,15 @@ type GrowToSize<T, A extends Array<T>, N extends number> = {
 
 export type FixedArray<T, N extends number> = GrowToSize<T, [], N>
 type arr<T extends number> = FixedArray<any, T>
-type StorageOf<T extends number> = TupleToStorage<arr<T>>export type SubObject<T, K extends keyof T> = {
+type StorageOf<T extends number> = TupleToStorage<arr<T>>
+
+export type SubObject<T, K extends keyof T> = {
   [P in K]: T[P]
 }
 export type FieldName<T, K extends keyof T> = K extends keyof T ? K : never
 export type IsFunction<T> = T extends (...args: any) => any ? T : never
+export type FieldsOrReg<T> = (keyof T)[] | RegExp
+export type Fields<T> = (keyof T)[]
+type Field<T> = keyof T
+type ElementOf<T> = T extends Array<infer E> ? E : never
 

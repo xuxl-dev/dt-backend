@@ -19,9 +19,10 @@ import { FastCrudFieldOptions } from './crud-gen/fast-crud.decl'
 import { applyDecorators } from '@nestjs/common'
 import { ObjectLiteral } from './crud-gen/fast-crud.decl'
 import { ClassType } from 'src/utils/utils'
-import { Only } from 'src/utils/type.utils'
+import { ExcludeNever, Only } from 'src/utils/type.utils'
 import {
   CreateActionOption,
+  CreateOption,
   LabeledActionOptions,
 } from './backend/decl/action.decl'
 
@@ -128,6 +129,14 @@ type TransformOptions = Partial<
   TransformQurryRetOptions | TransformRecordsOptions
 >
 
+type HookOptions<T> = {
+  onCheckFailure?: (data: T) => any
+  onPreTransformFailure?: (data: T) => any
+  onExecFailure?: (data: T) => any
+  onPostTransformFailure?: (data: T) => any
+  onSuccess?: (data: T) => any
+}
+
 export type ActionOptions<T> = {
   action: string
   method: CRUDMethod
@@ -150,20 +159,10 @@ export type ActionOptions<T> = {
    */
   route_override?: string
   expect?: ((data: T) => boolean) | ((data: T) => boolean)[]
-  transform?: (data: T) => T
-  transformQueryRet?: (result: any) => any
-  TransformQueryRetInplace?: (result: any) => any
-  TransformRecords?: (record: any) => any
-  TransformRecordsInplace?: (record: T) => any
-  transformAfter?: (data: { form: T }, queryRet: any) => any
-  onCheckFailure?: (data: T) => any
-  onPreTransformFailure?: (data: T) => any
-  onExecFailure?: (data: T) => any
-  onPostTransformFailure?: (data: T) => any
-  onSuccess?: (data: T) => any
   ctx?: object | null
 } & ShapeOptions<T> &
-  TransformOptions
+  TransformOptions &
+  HookOptions<T>
 
 export type ConfigCtx<T extends ObjectLiteral = any> = {
   option: ActionOptions<T>
@@ -187,10 +186,9 @@ export function Action<
   }
 }
 
-export function Action2<
-  T extends abstract new (...args: any) => InstanceType<T>,
-  K
->(options: LabeledActionOptions<InstanceType<T>, K>) {
+export function Action2<T extends ClassType<T>, K>(
+  options: LabeledActionOptions<InstanceType<T>, K>
+) {
   return function classDecorator(target: T) {
     // const token: BeforeActionTokenType = `${fcrud_prefix}before-action-${method}`
     // setProtoMeta(target, token, options)
@@ -201,20 +199,14 @@ export function Action2<
   }
 }
 
-
-export function Create<T extends ClassType<T>>(
-  options: PartialActionOptions<InstanceType<T>>
+export function Create<T extends ClassType<T>, K1>(
+  options: CreateActionOption<InstanceType<T>, K1>
 ) {
-  return Action<T>({ ...options, method: 'create', action: 'create' })
-}
-
-type OmitActionType<T> = Omit<T, 'action' | 'method'>
-export function Create2<
-  T extends ClassType<T>, K1
-> (
-  options: OmitActionType<CreateActionOption<InstanceType<T>, K1>>
-) {
-  return Action2<T, K1>({ ...options, method: 'create', action: 'create' })
+  return Action2<T, K1>({
+    ...options,
+    method: 'create',
+    action: 'create',
+  } as CreateOption<InstanceType<T>, K1>)
 }
 
 export function Read<T extends abstract new (...args: any) => InstanceType<T>>(

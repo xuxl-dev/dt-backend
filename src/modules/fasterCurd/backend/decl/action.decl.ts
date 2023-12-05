@@ -1,4 +1,12 @@
-import { SubObject, FieldName, IsFunction } from 'src/utils/type.utils'
+import {
+  SubObject,
+  FieldName,
+  IsFunction,
+  Only,
+  Never,
+  ExcludeNever,
+} from 'src/utils/type.utils'
+import { FieldsOrReg, Fields } from 'src/utils/type.utils'
 import {
   ExtendsOnly,
   Intersection,
@@ -9,11 +17,18 @@ import { ClassType } from 'src/utils/utils'
 
 type ActionName = string
 
-export type LabeledActionOptions<T, K> =
-  | CreateActionOption<T, K>
-  | ReadActionOption<T>
-  | UpdateActionOption<T>
-  | DeleteActionOption<T>
+export type LabeledActionOptions<
+  T,
+  K1 = any,
+  K2 = any,
+  K3 = any,
+  K4 = any,
+  K5 = any
+> =
+  | CreateOption<T, K1>
+  | ReadOption<T, K1>
+  | UpdateOption<T, K1>
+  | DeleteOption<T, K1>
 
 type ActionBaseOption<T> = {
   action: ActionName
@@ -25,17 +40,6 @@ type OptionalBaseOption<T> = Partial<{
   route_override: string
   expect: ((data: T) => boolean) | ((data: T) => boolean)[]
 }>
-
-type FieldsOrReg<T> = (keyof T)[] | RegExp
-type Fields<T> = (keyof T)[]
-type Field<T> = keyof T
-
-type SortOption<T> = {
-  sort: {
-    [prop in keyof T]?: 'ASC' | 'DESC'
-  }
-  allow_sort: FieldsOrReg<T>
-}
 
 type FieldOption<T> = {
   requires: FieldsOrReg<T>
@@ -55,18 +59,22 @@ type ReadResult = TODO
 type UpdateResult = TODO
 type DeleteResult = TODO
 
-/**
- * T: the entity type
- * K: the user input type (config)
- */
 type CreateTransformOption<T, K1> = {
   transform?: (form: T) => T
   TransformQueryRetInplace?: (result: CreateResult) => void
   transformQueryRet?: (result: CreateResult) => K1
   transformAfter?: (form: T, queryRet: K1) => any
 }
+type FieldSelector<T> = (keyof T)[] | RegExp
+type FullShapeOptions<T> = {
+  requires: FieldSelector<T>
+  denies: FieldSelector<T>
+  exactly: (keyof T)[]
+}
 
-type ElementOf<T> = T extends Array<infer E> ? E : never
+type ShapeOptions<T> =
+  | Only<FullShapeOptions<T>, 'requires' | 'denies'>
+  | Only<FullShapeOptions<T>, 'exactly'>
 
 type ReadTransformOption<T> = {
   transform?: (form: any) => any
@@ -93,25 +101,72 @@ type DeleteTransformOption<T> = {
   transformAfter?: (data: { form: T }, queryRet: any) => any
 }
 
-type CreateHookOption<T> = {}
-type ReadHookOption<T> = {}
-type UpdateHookOption<T> = {}
-type DeleteHookOption<T> = {}
+//TODO implement this
+type BaseHookOption<T> = {
+  onCheckFailure?: (data: T) => any
+  onPreTransformFailure?: (data: T) => any
+  onExecFailure?: (data: T) => any
+  onPostTransformFailure?: (data: T) => any
+  onSuccess?: (data: T) => any
+}
+type CreateHookOption<T> = {} & BaseHookOption<T>
+type ReadHookOption<T> = {} & BaseHookOption<T>
+type UpdateHookOption<T> = {} & BaseHookOption<T>
+type DeleteHookOption<T> = {} & BaseHookOption<T>
 
-export type CreateActionOption<T, K> = ActionBaseOption<T> & {
+export type CreateActionOption<T, K1> = OptionalBaseOption<T> &
+  Partial<CreateTransformOption<T, K1>> &
+  Partial<CreateHookOption<T>> &
+  Partial<ShapeOptions<T>>
+
+export type CreateOption<T, K1> = CreateActionOption<T, K1> & {
+  action: ActionName
   method: 'create'
-} & Partial<CreateTransformOption<T, K>> &
-  Partial<CreateHookOption<T>>
+}
 
-type ReadActionOption<T> = ActionBaseOption<T> & {
+export type PaginationOption = {
+  pagination?: {
+    min?: number
+    max: number
+  }
+}
+
+export type SortOption<T> = {
+  sort?: {
+    [prop in keyof T]?: 'ASC' | 'DESC'
+  }
+  allow_sort?: FieldsOrReg<T>
+}
+
+type ReadActionOption<T, K1> = OptionalBaseOption<T> &
+  Partial<ReadHookOption<T>> &
+  Partial<ReadTransformOption<T>> &
+  Partial<ShapeOptions<T>> &
+  Partial<PaginationOption> &
+  Partial<SortOption<T>>
+
+export type ReadOption<T, K1> = ReadActionOption<T, K1> & {
+  action: ActionName
   method: 'read'
-} & Partial<SortOption<T>>
+}
 
-type UpdateActionOption<T> = ActionBaseOption<T> & {
+type UpdateActionOption<T, K1> = OptionalBaseOption<T> &
+  Partial<UpdateTransformOption<T>> &
+  Partial<UpdateHookOption<T>> &
+  Partial<ShapeOptions<T>>
+
+export type UpdateOption<T, K1> = UpdateActionOption<T, K1> & {
+  action: ActionName
   method: 'update'
 }
 
-type DeleteActionOption<T> = ActionBaseOption<T> & {
+type DeleteActionOption<T, K1> = OptionalBaseOption<T> &
+  Partial<DeleteTransformOption<T>> &
+  Partial<DeleteHookOption<T>> &
+  Partial<ShapeOptions<T>>
+
+export type DeleteOption<T, K1> = DeleteActionOption<T, K1> & {
+  action: ActionName
   method: 'delete'
 }
 
@@ -127,64 +182,24 @@ type CreateTransformOption3<T, K> = {
 
 type TransformCreateOpt<T extends SubObject<T, 'a' | 'b'>> = {
   [K in keyof T]: K extends FieldName<T, 'b'>
-  ? (
-    arg: ReturnType<IsFunction<T[FieldName<T, 'a'>]>>
-  ) => ReturnType<IsFunction<T[FieldName<T, 'b'>]>> // If the key is 'a', set the output type of 'b' to the output type of 'a'
-  : T[K]
+    ? (
+        arg: ReturnType<IsFunction<T[FieldName<T, 'a'>]>>
+      ) => ReturnType<IsFunction<T[FieldName<T, 'b'>]>> // If the key is 'a', set the output type of 'b' to the output type of 'a'
+    : T[K]
 }
 
-type HasAll<T, K extends string[]> = T extends { [P in K[number]]: any } ? T : never
+type HasAll<T, K extends string[]> = T extends { [P in K[number]]: any }
+  ? T
+  : never
 
 type TransformCreateOpt3<T> = TransformCreateOpt2<HasAll<T, ['a', 'b']>>
 
 type TransformCreateOpt2<T extends SubObject<T, 'a' | 'b'>> = {
   [K in keyof T]: K extends FieldName<T, 'b'>
-  ? (
-    arg: ReturnType<IsFunction<T[FieldName<T, 'a'>]>>
-  ) => ReturnType<IsFunction<T[FieldName<T, 'b'>]>> // If the key is 'a', set the output type of 'b' to the output type of 'a'
-  : T[K]
-}
-
-
-type CreateOption<T> = {
-  method: 'create'
-  a?: (a: T) => any
-  b?: (arg) => any
-}
-
-export function Create<T, K>(
-  // options: ExtendsOnly<CreateOption<T>, TransformCreateOpt3<K>> & K
-  options: Intersection<CreateOption<T>, K> & Prettify<Intersection<TransformCreateOpt3<K>, K>>
-) {
-  return function classDecorator(target: T) { }
-}
-type hasall = HasAll<{
-  method: 'create',
-  a: (a: number) => number
-  b: (arg) => any
-}, ['a', 'b']>
-
-type ths = TransformCreateOpt3<{
-  method: 'create',
-  a: (a: number) => "asd"
-  b: (arg) => any
-}>
-
-type inter = Intersection<ths, {
-  method: 'create',
-  a: (a) => 123,
-  b: (arg) => 666,
-}>
-
-@Create({
-  method: 'create',
-  a: (a) => ({ s: 666 }),
-  // b: (arg) => 666,
-  b: (arg) => { },
-})
-class Demo {
-  id: number
-  name: string
+    ? (
+        arg: ReturnType<IsFunction<T[FieldName<T, 'a'>]>>
+      ) => ReturnType<IsFunction<T[FieldName<T, 'b'>]>> // If the key is 'a', set the output type of 'b' to the output type of 'a'
+    : T[K]
 }
 
 // type CreateTransformOption3<T> = <K>() => {

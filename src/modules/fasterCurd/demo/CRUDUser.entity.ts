@@ -1,8 +1,8 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 import {
   Action,
+  // CreateEx,
   Create,
-  Create2,
   CRUD,
   IgnoreField,
   Read,
@@ -10,10 +10,6 @@ import {
 import { $ } from '../crud-gen/fast-crud.decorator'
 
 @Entity()
-@Create({
-  requires: /.*/,
-  expect: [(x) => x.name.length >= 3, (x) => x.name.length <= 10],
-})
 @Read({
   sort: { id: 'ASC' },
   TransformRecordsInplace: (u) => (u.name = u.name.toUpperCase()),
@@ -25,7 +21,11 @@ import { $ } from '../crud-gen/fast-crud.decorator'
   transformQueryRet: () => 666,
   rawInput: true, // this prevents the form from being wrapped, ignores pagination & sort
 })
-@Create2({
+@Create({
+  requires: /.*/,
+  denies: ['id'],
+  // exactly: ['name'],
+  expect: [(x) => x.name.length >= 3, (x) => x.name.length <= 10],
   transformQueryRet: (result) => {
     return {
       'name': 'hello',
