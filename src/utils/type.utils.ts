@@ -13,15 +13,28 @@ export type OnlyOneOf<T> = {
 //   [K in keyof T]: K extends keyof U ? T[K] : never;
 // };
 
+// export type ExtendsOnly<T, U> = ExcludeNever<{
+//   [K in keyof T | keyof U]: K extends keyof T
+//     ? K extends keyof U
+//       ? T[K]
+//       : never
+//     : K extends keyof U
+//     ? U[K] | undefined
+//     : never
+// }>
+
 export type ExtendsOnly<T, U> = ExcludeNever<{
   [K in keyof T | keyof U]: K extends keyof T
     ? K extends keyof U
-      ? T[K]
+      ? U[K] extends T[K] ? U[K] : T[K]
       : never
     : K extends keyof U
     ? U[K] | undefined
-    : never
-}>
+    : never;
+}>;
+
+
+
 
 type ExcludeNever<T> = {
   [K in keyof T as T[K] extends never ? never : K]: T[K]

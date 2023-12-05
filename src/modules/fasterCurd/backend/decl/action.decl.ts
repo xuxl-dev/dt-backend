@@ -146,7 +146,7 @@ type ObjValueTuple<
   : R
 
 type TupleToNamedObject<T extends any[]> = {
-  [K in T[number] as `#${K}`]: K
+  [K in T[number]as `#${K}`]: K
 }
 
 type TupleToStorage<T> = {
@@ -189,40 +189,63 @@ type FieldName<T, K extends keyof T> = K extends keyof T ? K : never
 
 type IsFunction<T> = T extends (...args: any) => any ? T : never
 
-type DemoTransformKeys2<T extends SubObject<T, 'a' | 'b'>> = {
+type TransformCreateOpt<T extends SubObject<T, 'a' | 'b'>> = {
   [K in keyof T]: K extends FieldName<T, 'b'>
-    ? (
-        arg: ReturnType<IsFunction<T[FieldName<T, 'a'>]>>
-      ) => ReturnType<IsFunction<T[FieldName<T, 'b'>]>> // If the key is 'a', set the output type of 'b' to the output type of 'a'
-    : T[K]
+  ? (
+    arg: ReturnType<IsFunction<T[FieldName<T, 'a'>]>>
+  ) => ReturnType<IsFunction<T[FieldName<T, 'b'>]>> // If the key is 'a', set the output type of 'b' to the output type of 'a'
+  : T[K]
+}
+
+type HasAll<T, K extends string[]> = T extends { [P in K[number]]: any } ? T : never
+
+type TransformCreateOpt3<T> = TransformCreateOpt2<HasAll<T, ['a', 'b']>>
+
+type TransformCreateOpt2<T extends SubObject<T, 'a' | 'b'>> = {
+  [K in keyof T]: K extends FieldName<T, 'b'>
+  ? (
+    arg: ReturnType<IsFunction<T[FieldName<T, 'a'>]>>
+  ) => ReturnType<IsFunction<T[FieldName<T, 'b'>]>> // If the key is 'a', set the output type of 'b' to the output type of 'a'
+  : T[K]
 }
 
 
 type CreateOption<T> = {
   method: 'create'
-  a?: () => {
-    num: number
-  }
-  b?: (arg) => string
-  transform?: (form: T) => T
-  TransformQueryRetInplace?: (result: CreateResult) => void
-  transformQueryRet?: (result: CreateResult) => any
-  transformAfter?: (form: T, queryRet: any) => any
+  a?: (a: T) => any
+  b?: (arg) => any
 }
 
-export function Action4<T>(
-  options: DemoTransformKeys2<Partial<CreateOption<T>>>
+export function Create<T, K>(
+  // options: ExtendsOnly<CreateOption<T>, TransformCreateOpt3<K>> & K
+  options: Intersection<CreateOption<T>, K> & Prettify<Intersection<TransformCreateOpt3<K>, K>>
 ) {
-  return function classDecorator(target: T) {}
+  return function classDecorator(target: T) { }
 }
+type hasall = HasAll<{
+  method: 'create',
+  a: (a: number) => number
+  b: (arg) => any
+}, ['a', 'b']>
 
-@Action4({
-  a: () => ({
-    num: 0,
-  }),
-  b: (arg) => '666',
+type ths = TransformCreateOpt3<{
+  method: 'create',
+  a: (a: number) => "asd"
+  b: (arg) => any
+}>
+
+type inter = Intersection<ths, {
+  method: 'create',
+  a: (a) => 123,
+  b: (arg) => 666,
+}>
+
+@Create({
+  method: 'create',
+  a: (a) => ({ s: 666 }),
+  // b: (arg) => 666,
+  b: (arg) => { },
 })
-
 class Demo {
   id: number
   name: string
