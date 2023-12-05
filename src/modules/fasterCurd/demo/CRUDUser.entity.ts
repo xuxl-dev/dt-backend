@@ -25,7 +25,6 @@ import { $ } from '../crud-gen/fast-crud.decorator'
   transformQueryRet: () => 666,
   rawInput: true, // this prevents the form from being wrapped, ignores pagination & sort
 })
-// type ReturnType<T extends (...args: any) => any> = T extends (...args: any) => infer R ? R : any
 @Create2({
   transformQueryRet: (result) => {
     return {

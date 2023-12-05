@@ -210,13 +210,11 @@ export function Create<T extends ClassType<T>>(
 
 type OmitActionType<T> = Omit<T, 'action' | 'method'>
 export function Create2<
-  T extends ClassType<T>, K
+  T extends ClassType<T>, K1
 > (
-  // options: OmitActionType<CreateActionOption<InstanceType<T>, K>>
-  options: OmitActionType<CreateActionOption<InstanceType<T>, K>>
-  // options: Omit<CreateActionOption<InstanceType<T>>, 'action'>
+  options: OmitActionType<CreateActionOption<InstanceType<T>, K1>>
 ) {
-  return Action2<T, K>({ ...options, method: 'create', action: 'create' })
+  return Action2<T, K1>({ ...options, method: 'create', action: 'create' })
 }
 
 export function Read<T extends abstract new (...args: any) => InstanceType<T>>(
