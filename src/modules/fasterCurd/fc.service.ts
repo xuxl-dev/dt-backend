@@ -2,19 +2,17 @@ import { Injectable, Logger } from '@nestjs/common'
 import { HttpAdapterHost } from '@nestjs/core'
 import { Express } from 'express'
 import express = require('express')
-import { ActionOptions, ConfigCtx } from './fc.decorators'
+import { ConfigCtx } from './fc.decorators'
 import {
   BEFORE_ACTION_SUM_TOKEN,
-  BeforeActionTokenType,
-  CRUDMethod,
   FCRUD_GEN_CFG_TOKEN,
   FIELDS_TOKEN,
-  HttpMethods,
-  fcrud_prefix,
+  IGNORE_FIEIDS_TOKEN,
 } from './backend/fc.tokens'
+import { CRUDMethod, HttpMethods } from './backend/decl/base.decl'
 import { ENTITY_NAME_TOKEN, GEN_CRUD_METHOD_TOKEN } from './backend/fc.tokens'
 import { getProtoMeta } from '../../utils/reflect.utils'
-import { defaultCrudMethod } from './backend/fc.tokens'
+import { defaultCrudMethod } from './backend/decl/base.decl'
 import {
   CheckerType,
   IGNORE_ME,
@@ -39,6 +37,7 @@ import {
   PageQuery,
   PageRes,
 } from './crud-gen/fast-crud.decl'
+import { LabeledActionOptions } from './backend/decl/action.decl'
 const logger = new Logger('FasterCRUDService')
 const POST: HttpMethods = 'post'
 @Injectable()
@@ -81,20 +80,20 @@ export class FasterCrudService {
 
     const baseMethods: CRUDMethod[] =
       getProtoMeta(target, GEN_CRUD_METHOD_TOKEN) ?? defaultCrudMethod
-    const options: { [action: string]: ActionOptions<T> } = getProtoMeta(
+    const options: { [action: string]: LabeledActionOptions<T> } = getProtoMeta(
       target,
       BEFORE_ACTION_SUM_TOKEN
     )
     // merge base methods
     this.merge(baseMethods, options)
-
+    console.log(options)
     const docs: any = { crud: {}, dict }
     for (const action of Object.keys(options)) {
-      const option: ActionOptions<T> = options[action]
-      const method : CRUDMethod = option.method
-      const query = provider[method].bind(provider) 
+      const option: LabeledActionOptions<T> = options[action]
+      const method: CRUDMethod = option.method
+      const query = provider[method].bind(provider)
 
-      const cfg = { option, target, fields, method }
+      const cfg: ConfigCtx<T> = { option, target, fields, action }
       const decoratedMethod = this.configureMethod(cfg, query)
 
       const route = fixRoute(option?.route_override ?? `/${action}`)
@@ -111,11 +110,15 @@ export class FasterCrudService {
     this.addRouter(`${this.prefix}/${fcrudName}`, router.build())
   }
 
-  private merge<T extends abstract new (...args: any) => InstanceType<T>>(baseMethods: CRUDMethod[], options: { [action: string]: ActionOptions<T> }) {
+  private merge<T extends abstract new (...args: any) => InstanceType<T>>(
+    baseMethods: CRUDMethod[],
+    options: { [action: string]: LabeledActionOptions<T> }
+  ) {
     for (const method of baseMethods) {
       if (!options[method]) {
         options[method] = {
-          method, action: method
+          method,
+          action: method,
         }
       }
     }
@@ -126,6 +129,15 @@ export class FasterCrudService {
       getProtoMeta(entity, ENTITY_NAME_TOKEN) ?? entity.name
     ).toLowerCase()
     const fields = getProtoMeta(entity, FIELDS_TOKEN) ?? {}
+    const ignored = getProtoMeta(entity, IGNORE_FIEIDS_TOKEN) ?? []
+    // TODO clean this
+    // console.log(ignored)
+    // remove ignored fields
+    if (ignored && Array.isArray(ignored) && fields) {
+      for (const field of ignored) {
+        delete fields[field]
+      }
+    }
     const dict = getProtoMeta(entity, FCRUD_GEN_CFG_TOKEN) ?? {}
 
     return { dict, fcrudName, fields }
@@ -148,29 +160,57 @@ export class FasterCrudService {
     } = this.parseOptions(cfg)
     return async (data: any) => {
       try {
-        applyCheckers(checkers, data)
-
-        data = applyTransformers(pre_transformers, data)
+        await this.hooked(
+          data,
+          (d) => applyCheckers(checkers, d),
+          hooks.onCheckFailure
+        )
+        
+        // data = applyTransformers(pre_transformers, data)
+        await this.hooked(
+          data,
+          (d) => applyTransformers(pre_transformers, d),
+          hooks.onTransformFailure
+        )
 
         log(`exec with data:`, data)
 
-        let queryResult = await method(data)
+        let queryResult = await this.hooked(data, method, hooks.onExecFailure)
 
         log(`exec result:`, queryResult)
 
-        queryResult = applyTransformers(post_transformers, queryResult)
+        queryResult = await this.hooked(
+          queryResult,
+          (d) => applyTransformers(post_transformers, d),
+          hooks.onPostTransformFailure
+        )
 
         log(`transformed result:`, queryResult)
+
         const after = transform_after(data, queryResult)
-        log(data, queryResult)
+        await hooks.onSuccess?.(after)
+
         log(`transformed after:`, after)
         return after
       } catch (e) {
         logger.error(`error when executing method ${method.name}:`, e)
-        // logger.debug(`error data:`, data)
-        // logger.debug(`stack:`, e.stack)
         throw new Error(e.message)
       }
+    }
+  }
+
+  private async hooked(
+    data: any,
+    action: ((data:any) => any) | ((data:any) => Promise<any>),
+    hook: (data: any) => any
+  ) {
+    try {
+      return await action(data)
+    } catch (e) {
+      if (hook) {
+        hook(data)
+      }
+      throw e
     }
   }
 
@@ -179,12 +219,18 @@ export class FasterCrudService {
       checker_factories,
       pre_transformer_factories,
       post_transformer_factories,
-    ].map((f) => {
+    ].map(
+      (fs) => fs.map((f) => f(ctx)).filter((item) => item !== IGNORE_ME)
       // get all products, and filter out empty ones
-      return f.map((f) => f(ctx)).filter((item) => item !== IGNORE_ME)
-    })
+    )
 
-    const hooks = [] //TODO: hooks are not implemented yet
+    const hooks = {
+      onCheckFailure: ctx.option.onCheckFailure,
+      onTransformFailure: ctx.option.onPreTransformFailure,
+      onExecFailure: ctx.option.onExecFailure,
+      onPostTransformFailure: ctx.option.onPostTransformFailure,
+      onSuccess: ctx.option.onSuccess,
+    }
 
     return {
       checkers: checkers as CheckerType[],

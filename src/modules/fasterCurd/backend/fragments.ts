@@ -1,7 +1,7 @@
 import { ConfigCtx } from '../fc.decorators'
 import validatorMap from './validators'
 import { PageQuery } from '../crud-gen/fast-crud.decl'
-import { CRUDMethod } from './fc.tokens'
+import { CRUDMethod } from './decl/base.decl'
 import { isEmptyObject } from 'src/utils/utils'
 import { isCallable } from 'src/utils/objectTools'
 
@@ -11,11 +11,11 @@ export type CheckerType = (data: any) => void
 export type PendingTransformerType = ((data: any) => any) | typeof IGNORE_ME
 export type TransformerType = (data: any) => any
 
-const form_requests: CRUDMethod[] = ['create', 'update', 'delete']
-const query_requests: CRUDMethod[] = ['read']
+const form_requests: string[] = ['create', 'update', 'delete']
+const query_requests: string[] = ['read']
 
-function shape_checker({ option: options, method: action }: ConfigCtx) {
-  const { rawInput } = options
+function shape_checker({ option: option, action: action }: ConfigCtx) {
+  const { rawInput } = option
   let check_shape: PendingCheckerType = IGNORE_ME
   if (!rawInput && form_requests.includes(action)) {
     check_shape = (data: any) => {
@@ -27,10 +27,13 @@ function shape_checker({ option: options, method: action }: ConfigCtx) {
   return check_shape
 }
 
-function pagination_checker({ option: options }: ConfigCtx) {
+function pagination_checker({ option }: ConfigCtx) {
   let check_pagination: PendingCheckerType = IGNORE_ME
-  const { pagination } = options
-  if (pagination) {
+  if (option.method !== 'read') {
+    return check_pagination
+  }
+  const { pagination, rawInput } = option
+  if (pagination && !rawInput) {
     check_pagination = ({ page }: PageQuery) => {
       // check if pagination is exist
       if (!page) {
@@ -62,10 +65,13 @@ function pagination_checker({ option: options }: ConfigCtx) {
   return check_pagination
 }
 
-function sort_checker({ option: options }: ConfigCtx) {
-  const { sort: default_sort } = options
+function sort_checker({ option }: ConfigCtx) {
   let check_sort: PendingCheckerType = IGNORE_ME
-  if (default_sort) {
+  if (option.method !== 'read') {
+    return check_sort
+  }
+  const { sort: default_sort, rawInput } = option
+  if (default_sort && !rawInput) {
     check_sort = (query: PageQuery) => {
       const { sort } = query
       if (!sort || isEmptyObject(sort)) {
@@ -76,9 +82,9 @@ function sort_checker({ option: options }: ConfigCtx) {
   return check_sort
 }
 
-function expect_checker({ option: options }: ConfigCtx) {
+function expect_checker({ option }: ConfigCtx) {
   //TODO sync this with requrie_checker
-  const { expect } = options
+  const { expect } = option
   let check_expect: PendingCheckerType = IGNORE_ME
   if (!expect) {
     return check_expect
@@ -103,21 +109,21 @@ function expect_checker({ option: options }: ConfigCtx) {
   return check_expect
 }
 
-function requrie_checker({ option: options, fields }: ConfigCtx) {
-  const { requires } = options
+function requrie_checker({ option, fields }: ConfigCtx) {
+  const { requires } = option
   let check_requirements: PendingCheckerType = IGNORE_ME
   if (requires && Array.isArray(requires) && requires.length > 0) {
     check_requirements = ({ form }: any) => {
       for (const field of requires) {
         if (!form.hasOwnProperty(field)) {
-          throw new Error(`Missing field ${String(field)} form`)
+          throw new Error(`Missing field ${String(field)} in form`)
         }
       }
     }
   } else if (requires instanceof RegExp) {
     check_requirements = ({ form }: any) => {
       for (const [name, field] of Object.entries(fields)) {
-        // console.log(name, field)
+        console.log(name, field)
         if (
           requires.test(name) &&
           !form.hasOwnProperty(name) &&
@@ -131,9 +137,9 @@ function requrie_checker({ option: options, fields }: ConfigCtx) {
   return check_requirements
 }
 
-function deny_checker({ option: options }: ConfigCtx) {
+function deny_checker({ option }: ConfigCtx) {
   //TODO sync this with requrie_checker
-  const { denies } = options
+  const { denies } = option
   let check_requirements: PendingCheckerType = IGNORE_ME
   if (denies && Array.isArray(denies) && denies.length > 0) {
     check_requirements = ({ form }: any) => {
@@ -156,8 +162,8 @@ function deny_checker({ option: options }: ConfigCtx) {
   return check_requirements
 }
 
-function exactly_checker({ option: options }: ConfigCtx) {
-  const { exactly } = options
+function exactly_checker({ option }: ConfigCtx) {
+  const { exactly } = option
   let check_requirements: PendingCheckerType = IGNORE_ME
   if (exactly && Array.isArray(exactly) && exactly.length > 0) {
     check_requirements = ({ form }: any) => {
@@ -176,8 +182,8 @@ function exactly_checker({ option: options }: ConfigCtx) {
   return check_requirements
 }
 
-function type_checker({ option: options, fields }: ConfigCtx) {
-  const { checkType } = options
+function type_checker({ option, fields }: ConfigCtx) {
+  const { checkType } = option
   let check_requirements: PendingCheckerType = IGNORE_ME
   if (checkType) {
     check_requirements = ({ form }: any) => {
@@ -204,9 +210,17 @@ function type_checker({ option: options, fields }: ConfigCtx) {
   return check_requirements
 }
 
-function return_transformer({ option: options }: ConfigCtx) {
-  const { transformQueryRet, TransformQueryRetInplace, TransformRecordsInplace } = options
+function return_transformer({ option }: ConfigCtx) {
   let transform_query_return: PendingTransformerType = IGNORE_ME
+
+  // if (option.method !== 'read') {
+  //   return transform_query_return
+  // }
+  const {
+    transformQueryRet,
+    TransformQueryRetInplace,
+
+  } = option
   if (transformQueryRet) {
     //TODO add check for function
     transform_query_return = transformQueryRet
@@ -219,18 +233,22 @@ function return_transformer({ option: options }: ConfigCtx) {
     }
   }
 
-  if (TransformRecordsInplace) {
-    transform_query_return = (x) => {
-      x.records.forEach(TransformRecordsInplace)
-      return x
+  //TODO extract this!
+  if (option.method === 'read') {
+    const {TransformRecordInplace} = option 
+    if (TransformRecordInplace) {
+      transform_query_return = (x) => {
+        x.records.forEach(TransformRecordInplace)
+        return x
+      }
     }
   }
-
+  
   return transform_query_return
 }
 
-function pre_transformer({ option: options }: ConfigCtx) {
-  const { transform } = options
+function pre_transformer({ option }: ConfigCtx) {
+  const { transform } = option
   let transform_data: PendingTransformerType = IGNORE_ME
   if (transform) {
     //TODO add check for function
@@ -240,8 +258,8 @@ function pre_transformer({ option: options }: ConfigCtx) {
 }
 
 // this is a special one
-function after_transformer({ option: options, method: action }: ConfigCtx) {
-  const { transformAfter } = options
+function after_transformer({ option, action }: ConfigCtx) {
+  const { transformAfter } = option
   if (transformAfter) {
     // user's override, use it
     return transformAfter
@@ -256,44 +274,13 @@ function after_transformer({ option: options, method: action }: ConfigCtx) {
   }
   if (query_requests.includes(action)) {
     // if Read, then return records
-    transform_after = (data: any, transformedQueryRet: any) => {
-      return transformedQueryRet
+    transform_after = (data: any, queryRet: any) => {
+      return queryRet
     }
   }
 
   return transform_after
 }
-
-// export function pagination_transformer({ options }: ConfigCtx) {
-//   const { pagination, rawInput } = options
-//   if (rawInput) {
-//     return (data: any) => data
-//   }
-
-//   let transform_pagination = (data: PageQuery) => {
-//     return {
-//       form: data.form,
-//     } as PageQuery
-//   }
-//   if (pagination) {
-//     // add skip and limit to data
-//     transform_pagination = (data: PageQuery) => {
-//       if (!data.hasOwnProperty('page')) {
-//         throw new Error(`pagination not found for paginated query`)
-//       }
-
-//       const { currentPage, pageSize } = data['page'] // all start from 0
-
-//       return {
-//         form: data.form,
-//         page: {
-//           currentPage,
-//           pageSize,
-//         }
-//     }
-//   }
-//   return transform_pagination
-// }
 
 export const checker_factories = [
   shape_checker,
