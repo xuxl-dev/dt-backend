@@ -9,7 +9,7 @@ import {
   IgnoreField,
   Read,
 } from '../fc.decorators'
-import { $ } from '../crud-gen/fast-crud.decorator'
+import $ from '../crud-gen/fast-crud.decorator'
 
 @Entity()
 @Read({
