@@ -6,7 +6,6 @@ import {
 } from 'src/utils/type.utils'
 import { FieldsOrReg, Fields } from 'src/utils/type.utils'
 
-
 type ActionName = string
 
 export type LabeledActionOptions<
@@ -31,18 +30,6 @@ type OptionalBaseOption<T> = Partial<{
   ctx: object
 }>
 
-type FieldOption<T> = {
-  requires: FieldsOrReg<T>
-  denies: FieldsOrReg<T>
-  exactly: Fields<T>
-}
-
-type FormOption<T> = {
-  form: Partial<T>
-}
-type RowOption<T> = {
-  row: Partial<T>
-}
 //TODO implement this
 type TODO = any
 type CreateResult = TODO
