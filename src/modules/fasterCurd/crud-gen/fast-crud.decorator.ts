@@ -118,3 +118,5 @@ export namespace $ {
     )
   }
 }
+
+export default $

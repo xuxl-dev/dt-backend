@@ -110,7 +110,7 @@ function expect_checker({ option }: ConfigCtx) {
 }
 
 function requrie_checker({ option, fields }: ConfigCtx) {
-  const { requires } = option
+  const { require: requires, deny: denies } = option
   let check_requirements: PendingCheckerType = IGNORE_ME
   if (requires && Array.isArray(requires) && requires.length > 0) {
     check_requirements = ({ form }: any) => {
@@ -139,7 +139,7 @@ function requrie_checker({ option, fields }: ConfigCtx) {
 
 function deny_checker({ option }: ConfigCtx) {
   //TODO sync this with requrie_checker
-  const { denies } = option
+  const { deny: denies } = option
   let check_requirements: PendingCheckerType = IGNORE_ME
   if (denies && Array.isArray(denies) && denies.length > 0) {
     check_requirements = ({ form }: any) => {

@@ -51,6 +51,7 @@ export type Intersection<T, U> = {
   [K in Extract<keyof T, keyof U>]: T[K]
 }
 
+
 export type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};
