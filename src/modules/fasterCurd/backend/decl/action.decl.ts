@@ -68,13 +68,13 @@ type CreateTransformOption<T, K1> = {
 }
 type FieldSelector<T> = (keyof T)[] | RegExp
 type FullShapeOptions<T> = {
-  requires: FieldSelector<T>
-  denies: FieldSelector<T>
+  require: FieldSelector<T>
+  deny: FieldSelector<T>
   exactly: (keyof T)[]
 }
 
 type ShapeOptions<T> =
-  | Only<FullShapeOptions<T>, 'requires' | 'denies'>
+  | Only<FullShapeOptions<T>, 'require' | 'deny'>
   | Only<FullShapeOptions<T>, 'exactly'>
 
 type ReadTransformOption<T> = {
