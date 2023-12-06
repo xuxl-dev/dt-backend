@@ -1,92 +1,22 @@
-type ITransform<U = any, V = any> = (data: U) => V
+type TransformFunction<T, U> = (data: T) => U;
 
-type IsTransform<T> = T extends ITransform ? T : never
-type IsTransform2<T> = T extends ITransform ? T : never
-type IsTransforms<T> = T extends ITransform[] ? T : never
-/**
- * T has 0 elements: return A
- * T has 1 element: return the return type of the transform function
- * T has more than 1 element: return a function
- */
-type ConstrainedTransformedType<A, T extends ITransform[]> = T extends []
-  ? A
-  : T extends [infer F]
-  ? ReturnType<IsTransform<F>>
-  : T extends [infer F, ...infer R]
-  ? ConstrainedTransformedType<ReturnType<IsTransform<F>>, IsTransforms<R>>
-  : never
-
-function transform<T extends ITransform[]>(...transforms: T) {
-  return <A>(data: A) => {
-    return transforms.reduce((acc, transform) => {
-      return transform(acc)
-    }, data) as ConstrainedTransformedType<A, T>
-  }
+function transform<A, B>(op1: TransformFunction<A, B>):  <C>(data: C) => B;
+function transform<A, B, C>(op1: TransformFunction<A, B>, op2: TransformFunction<B, C>): <D>(data: D) => C;
+function transform<A, B, C, D>(op1: TransformFunction<A, B>, op2: TransformFunction<B, C>, op3: TransformFunction<C, D>): <E>(data: E) => D;
+function transform<A, B, C, D, E>(op1: TransformFunction<A, B>, op2: TransformFunction<B, C>, op3: TransformFunction<C, D>, op4: TransformFunction<D, E>): <F>(data: F) => E;
+function transform<A, B, C, D, E, F>(op1: TransformFunction<A, B>, op2: TransformFunction<B, C>, op3: TransformFunction<C, D>, op4: TransformFunction<D, E>, op5: TransformFunction<E, F>): <G>(data: G) => F;
+function transform<A, B, C, D, E, F, G>(op1: TransformFunction<A, B>, op2: TransformFunction<B, C>, op3: TransformFunction<C, D>, op4: TransformFunction<D, E>, op5: TransformFunction<E, F>, op6: TransformFunction<F, G>): <H>(data: H) => G;
+function transform<A, B, C, D, E, F, G, H>(op1: TransformFunction<A, B>, op2: TransformFunction<B, C>, op3: TransformFunction<C, D>, op4: TransformFunction<D, E>, op5: TransformFunction<E, F>, op6: TransformFunction<F, G>, op7: TransformFunction<G, H>): <I>(data: I) => H;
+function transform<A, B, C, D, E, F, G, H, I>(op1: TransformFunction<A, B>, op2: TransformFunction<B, C>, op3: TransformFunction<C, D>, op4: TransformFunction<D, E>, op5: TransformFunction<E, F>, op6: TransformFunction<F, G>, op7: TransformFunction<G, H>, op8: TransformFunction<H, I>): <J>(data: J) => I;
+function transform<A, B, C, D, E, F, G, H, I, J>(op1: TransformFunction<A, B>, op2: TransformFunction<B, C>, op3: TransformFunction<C, D>, op4: TransformFunction<D, E>, op5: TransformFunction<E, F>, op6: TransformFunction<F, G>, op7: TransformFunction<G, H>, op8: TransformFunction<H, I>, op9: TransformFunction<I, J>): <K>(data: K) => J;
+function transform(...ops: TransformFunction<any, any>[]) {
+  return <I>(data: I) => ops.reduce((acc, op) => op(acc), data);
 }
+// example
+const pickAB: TransformFunction<{ a: number; b: number }, { a: number }> = (data) => ({ a: data.a });
+const doubleA: TransformFunction<{ a: number }, { a: number }> = (data) => ({ a: data.a * 2 });
+const stringifyA: TransformFunction<{ a: number }, { a: string }> = (data) => ({ a: data.a.toString() });
 
-function pick<T extends Record<string, any>>(
-  ...fields: Extract<keyof T, string>[]
-) {
-  return <A extends T>(data: A) => {
-    return fields.reduce((acc, field) => {
-      acc[field] = data[field]
-      return acc
-    }, {} as Pick<A, (typeof fields)[number]>)
-  }
-}
-
-const mypick = pick('a', 'b', 'c')
-const demoObj = {
-  a: 1,
-  b: 2,
-  c: 3,
-  d: 4,
-}
-
-// function onetransform<T extends <Arg extends number>(arg: Arg) => any>(transform: T) {
-//   return <A>(data: A) => {
-//     return transform(data as any) as ReturnType<T>;
-//   };
-// }
-
-// function doubleNumber(num: number): number {
-//   return num * 2;
-// }
-
-// // 使用 onetransform 创建一个新的转换函数
-// const doubledTransform = onetransform(doubleNumber);
-
-// // 测试新的转换函数
-// const result = doubledTransform(5);
-
-type TransformFunction<T, V> = (input: T) => V;
-
-function onetransform<T, V>(transform: TransformFunction<T, V>) {
-  return <A>(data: A): ReturnType<TransformFunction<T, V>> => {
-    return transform(data as unknown as T) as ReturnType<TransformFunction<T, V>>;
-  };
-}
-
-// 定义一个转换函数，将字符串转换为大写
-function uppercaseTransformer(str: string): string {
-  return str.toUpperCase();
-}
-
-// 定义一个转换函数，将数字加倍
-function doubleNumberTransformer(num: number): number {
-  return num * 2;
-}
-
-// 使用 onetransform 创建字符串转换器
-const uppercaseTransform = onetransform(uppercaseTransformer);
-
-// 使用 onetransform 创建数字加倍转换器
-const doubleNumberTransform = onetransform(doubleNumberTransformer);
-
-// 测试字符串转换器
-const resultString= uppercaseTransform("hello");
-console.log(resultString); // 输出 "HELLO"
-
-// 测试数字加倍转换器
-const resultNumber = doubleNumberTransform(5);
-console.log(resultNumber); // 输出 10
+const data = { a: 5, b: 10 };
+const result = transform(pickAB, doubleA, stringifyA)(data);
+console.log(result); 
