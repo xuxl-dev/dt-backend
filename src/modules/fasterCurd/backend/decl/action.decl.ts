@@ -3,17 +3,9 @@ import {
   FieldName,
   IsFunction,
   Only,
-  Never,
-  ExcludeNever,
 } from 'src/utils/type.utils'
 import { FieldsOrReg, Fields } from 'src/utils/type.utils'
-import {
-  ExtendsOnly,
-  Intersection,
-  Prettify,
-  Prettify2,
-} from 'src/utils/type.utils'
-import { ClassType } from 'src/utils/utils'
+
 
 type ActionName = string
 
@@ -30,15 +22,13 @@ export type LabeledActionOptions<
   | UpdateOption<T, K1>
   | DeleteOption<T, K1>
 
-type ActionBaseOption<T> = {
-  action: ActionName
-} & OptionalBaseOption<T>
 
 type OptionalBaseOption<T> = Partial<{
   rawInput: boolean
   checkType: boolean
   route_override: string
   expect: ((data: T) => boolean) | ((data: T) => boolean)[]
+  ctx: object
 }>
 
 type FieldOption<T> = {
@@ -188,10 +178,10 @@ type CreateTransformOption3<T, K> = {
 
 type TransformCreateOpt<T extends SubObject<T, 'a' | 'b'>> = {
   [K in keyof T]: K extends FieldName<T, 'b'>
-    ? (
-        arg: ReturnType<IsFunction<T[FieldName<T, 'a'>]>>
-      ) => ReturnType<IsFunction<T[FieldName<T, 'b'>]>> // If the key is 'a', set the output type of 'b' to the output type of 'a'
-    : T[K]
+  ? (
+    arg: ReturnType<IsFunction<T[FieldName<T, 'a'>]>>
+  ) => ReturnType<IsFunction<T[FieldName<T, 'b'>]>> // If the key is 'a', set the output type of 'b' to the output type of 'a'
+  : T[K]
 }
 
 type HasAll<T, K extends string[]> = T extends { [P in K[number]]: any }
@@ -202,10 +192,10 @@ type TransformCreateOpt3<T> = TransformCreateOpt2<HasAll<T, ['a', 'b']>>
 
 type TransformCreateOpt2<T extends SubObject<T, 'a' | 'b'>> = {
   [K in keyof T]: K extends FieldName<T, 'b'>
-    ? (
-        arg: ReturnType<IsFunction<T[FieldName<T, 'a'>]>>
-      ) => ReturnType<IsFunction<T[FieldName<T, 'b'>]>> // If the key is 'a', set the output type of 'b' to the output type of 'a'
-    : T[K]
+  ? (
+    arg: ReturnType<IsFunction<T[FieldName<T, 'a'>]>>
+  ) => ReturnType<IsFunction<T[FieldName<T, 'b'>]>> // If the key is 'a', set the output type of 'b' to the output type of 'a'
+  : T[K]
 }
 
 // type CreateTransformOption3<T> = <K>() => {
