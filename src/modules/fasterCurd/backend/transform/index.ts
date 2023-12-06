@@ -72,6 +72,7 @@ class Trans<Target = any> {
 
 import pick from './transforms/pick'
 import omit from './transforms/omit'
+import map from './transforms/map'
 
 const obj = {
   a: 1,
@@ -84,6 +85,8 @@ const trans = new Trans<typeof obj>()
 const transform = trans.transform(
   pick('a', 'b', 'c'),
   pick('a', 'b'),
-  omit('a')
+  map((obj) => obj.a + obj.b * 2),
+  map((v) => v * 2)
 )
-const ret = transform(obj).b
+
+console.log(transform(obj))
