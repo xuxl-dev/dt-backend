@@ -75,6 +75,7 @@ type UpdateTransformOption<T> = {
   TransformRecordsInplace?: (record: T) => any
   transformAfter?: (data: { form: T }, queryRet: any) => any
 }
+
 type DeleteTransformOption<T> = {
   transform?: (data: { row: T }) => Partial<T> | any
   transformQueryRet?: (result: any) => any
@@ -92,6 +93,7 @@ type BaseHookOption<T> = {
   onPostTransformFailure?: (data: T) => any
   onSuccess?: (data: T) => any
 }
+
 type CreateHookOption<T> = {} & BaseHookOption<T>
 type ReadHookOption<T> = {} & BaseHookOption<T>
 type UpdateHookOption<T> = {} & BaseHookOption<T>
