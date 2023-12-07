@@ -1,6 +1,5 @@
-
 import { getBuilder, TransformFunction } from './builder'
-import { map, pick, values } from './transforms'
+import { map, pick, values, withContext, getContext, apply } from './transforms'
 
 const obj = {
   a: 1,
@@ -11,12 +10,13 @@ const obj = {
 const trans = getBuilder(obj)
 
 const transform = trans(
+  withContext({}),
   pick('a', 'b', 'c'),
   pick('a', 'b'),
-  map((obj) => obj.a + obj.b * 2),
-  map((v) => v * 2),
+  values(),
+  apply((obj) => console.log(obj))
 )
 
-console.log(transform(obj))
+console.log(`returning`, transform(obj))
 
 export { TransformFunction }

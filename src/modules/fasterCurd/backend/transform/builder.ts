@@ -69,11 +69,12 @@ class TransformBuilder<Target = any> {
   }
 }
 
+const builder = new TransformBuilder()
+
 function getBuilder<T>(target?: T) : TransformOf<T> {
   return (builder as unknown as TransformBuilder<T>).transform
   // return new TransformBuilder<T>()
 }
-const builder = getBuilder()
 export type TransformOf<T> = TransformBuilder<T>['transform']
 
 export {

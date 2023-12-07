@@ -1,3 +1,41 @@
+import { TransformFunction } from '..'
+import {
+  getContext,
+  getInternalContext,
+  beforeTransformToken,
+  afterTransformToken,
+} from './withContext'
+
+export type InternalCtx = {
+  obj: any
+  result: any
+}
+
+export function createTransform<T, U>(
+  transformFn: (obj: T, context: any) => U
+): TransformFunction<T, U> {
+  return function transformer(obj: T): U {
+    const context = getInternalContext(obj)
+    if (!context) {
+      console.warn('missing internal context!')
+    }
+    const ctx: InternalCtx = {
+      obj,
+      result: null,
+    }
+
+    context?.[beforeTransformToken]?.forEach((fn) => fn(ctx))
+
+    const result = transformFn(obj, context)
+
+    ctx.result = result
+
+    context?.[afterTransformToken]?.forEach((fn) => fn(ctx))
+
+    return result
+  }
+}
+
 export { default as values } from './values'
 export { default as pick } from './pick'
 export { default as map } from './map'
