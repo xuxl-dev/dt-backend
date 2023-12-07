@@ -40,7 +40,7 @@ export function createTransform<T, U>(
 
 export { default as values } from './values'
 export { default as pick } from './pick'
-export { default as apply } from './apply'
+export { default as apply, applyInplcae } from './apply'
 export { default as default } from './default'
 export { default as filter } from './filter'
 export { default as omit } from './omit'
