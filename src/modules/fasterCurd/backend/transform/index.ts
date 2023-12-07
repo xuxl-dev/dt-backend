@@ -70,6 +70,10 @@ class Trans<Target = any> {
   }
 }
 
+function getBuilder<T = any>(target?: T) {
+  return new Trans<T>()
+}
+
 import pick from './transforms/pick'
 import omit from './transforms/omit'
 import map from './transforms/map'
@@ -81,7 +85,7 @@ const obj = {
   c: 3,
   d: 4,
 }
-const trans = new Trans<typeof obj>()
+const trans = getBuilder()
 
 const transform = trans.transform(
   pick('a', 'b', 'c'),
