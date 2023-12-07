@@ -35,7 +35,10 @@ type ObjValueTuple<
 > = KS extends [infer K, ...infer KT]
   ? ObjValueTuple<T, KT, [...R, T[K & keyof T]]>
   : R
-function values<T>(): TransformFunction<T, ObjValueTuple<T>> {
+function values<T extends { [key: string]: any }>(): TransformFunction<
+  T,
+  ObjValueTuple<T>
+> {
   return function valuesFunction(obj: T): ObjValueTuple<T> {
     return Object.values(obj) as ObjValueTuple<T>
   }
