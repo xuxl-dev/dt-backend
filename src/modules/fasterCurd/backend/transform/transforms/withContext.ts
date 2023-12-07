@@ -1,4 +1,4 @@
-import { InternalCtx } from '.'
+import { InternalCtx, createTransform } from '.'
 import { TransformFunction } from '..'
 
 const contextSymbol = Symbol('__context')
@@ -22,7 +22,7 @@ function withContext<T extends object>(
         }
 
         return Reflect.get(target, prop, receiver)
-      },
+      }
     })
 
     initContext(proxy)
@@ -30,6 +30,16 @@ function withContext<T extends object>(
     return proxy as T
   }
 }
+
+function dropContext<T extends object>(): TransformFunction<T, T> {
+  return createTransform((obj: T) => {
+    Reflect.deleteProperty(obj, contextSymbol);
+    Reflect.deleteProperty(obj, userContextSymbol);
+    
+    return obj as T
+  })
+}
+
 /**
  * override the context
  * @param source
@@ -40,9 +50,13 @@ function transferContext<T>(ctx: InternalCtx): T {
   // if destination is primitive, do nothing
   const { obj: source, result: destination } = ctx
   if (typeof destination !== 'object') {
-    console.warn('transferContext: destination is not an object, stop transfer') 
+    console.warn('transferContext: destination is not an object, stop transfer')
     //TODO is this a better way to handle this?
     // such as warp the values in an object?
+    return destination
+  }
+
+  if (source == destination) {
     return destination
   }
 
@@ -68,7 +82,7 @@ function initContext(obj) {
   // console.log('initContext', obj)
 }
 
-export default withContext
+export { withContext, dropContext }
 
 export function getContext(obj: any): any {
   return (obj as any)[userContextSymbol]

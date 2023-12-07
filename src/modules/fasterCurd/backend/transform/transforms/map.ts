@@ -1,9 +1,14 @@
 import { createTransform } from '.'
 import { TransformFunction } from '..'
 
-function map<T = any, U = any>(mapper: (obj: T) => U): TransformFunction<T, U> {
-  return createTransform((obj: T) => {
-    return mapper(obj)
+function map<T, A>(
+  transform: TransformFunction<T, A>
+): TransformFunction<T[], A[]> {
+  // return function mapper(array: T[]): A[] {
+  //   return array.map(transform);
+  // };
+  return createTransform((array: T[]) => {
+    return array.map(transform)
   })
 }
 

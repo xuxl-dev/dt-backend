@@ -1,22 +1,42 @@
 import { getBuilder, TransformFunction } from './builder'
-import { map, pick, values, withContext, getContext, apply } from './transforms'
+import {
+  pick,
+  values,
+  getContext,
+  apply,
+  dropContext,
+  withContext,
+  omit,
+  rename,
+  map,
+  reduce,
+  join,
+} from './transforms'
+export { TransformFunction }
 
 const obj = {
-  a: 1,
-  b: 2,
-  c: 3,
-  d: 4,
+  a: 'we',
+  b: 'love',
+  jvav: 'java',
+  d: 'javascript',
+  e: 'faster-crud',
 }
-const trans = getBuilder(obj)
+const transformsOf = getBuilder(obj)
 
-const transform = trans(
-  withContext({}),
-  pick('a', 'b', 'c'),
-  pick('a', 'b'),
+const transform = transformsOf(
+  withContext({ foo: 'typescript' }),
+  rename({ jvav: 'shit' }),
+  omit('shit'),
+  pick('a', 'b', 'd'),
+  apply((obj) => {
+    const context = getContext(obj)
+    obj.d = context.foo
+    return obj
+  }),
+  dropContext(),
   values(),
-  apply((obj) => console.log(obj))
+  map((s) => s.toUpperCase()),
+  join(' ')
 )
-
-console.log(`returning`, transform(obj))
-
-export { TransformFunction }
+console.log(`returns:`)
+console.log(transform(obj))

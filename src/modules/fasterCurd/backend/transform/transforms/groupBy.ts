@@ -1,20 +1,35 @@
-import { TransformFunction } from '..';
+import { createTransform } from '.'
+import { TransformFunction } from '..'
 
 function groupBy<T>(key: keyof T): TransformFunction<T[], Record<string, T[]>> {
-  return function groupByTransformer(array: T[]): Record<string, T[]> {
-    const grouped: Record<string, T[]> = {};
+  // return function groupByTransformer(array: T[]): Record<string, T[]> {
+  //   const grouped: Record<string, T[]> = {};
+
+  //   array.forEach((item) => {
+  //     const keyValue = String(item[key]);
+  //     if (grouped[keyValue]) {
+  //       grouped[keyValue].push(item);
+  //     } else {
+  //       grouped[keyValue] = [item];
+  //     }
+  //   });
+
+  //   return grouped;
+  // };
+  return createTransform((array: T[]) => {
+    const grouped: Record<string, T[]> = {}
 
     array.forEach((item) => {
-      const keyValue = String(item[key]);
+      const keyValue = String(item[key])
       if (grouped[keyValue]) {
-        grouped[keyValue].push(item);
+        grouped[keyValue].push(item)
       } else {
-        grouped[keyValue] = [item];
+        grouped[keyValue] = [item]
       }
-    });
+    })
 
-    return grouped;
-  };
+    return grouped
+  })
 }
 
-export default groupBy;
+export default groupBy

@@ -1,9 +1,12 @@
-import { TransformFunction } from '..';
+import { createTransform } from '.'
+import { TransformFunction } from '..'
 
-function apply<T, A>(transform: TransformFunction<T, A>): TransformFunction<T[], void> {
-  return function applier(array: T[]): void {
-    array.map(transform);
-  };
+function apply<T = any, U = any>(
+  applier: (obj: T) => U
+): TransformFunction<T, U> {
+  return createTransform((obj: T) => {
+    return applier(obj)
+  })
 }
 
-export default apply;
+export default apply

@@ -8,6 +8,7 @@
 
 // export default values;
 
+import { createTransform } from '.'
 import { TransformFunction } from '..'
 
 type TupleFromObject<T> = { [K in keyof T]: [T[K]] }[keyof T]
@@ -39,9 +40,12 @@ function values<T extends { [key: string]: any }>(): TransformFunction<
   T,
   ObjValueTuple<T>
 > {
-  return function valuesFunction(obj: T): ObjValueTuple<T> {
+  // return function valuesFunction(obj: T): ObjValueTuple<T> {
+  //   return Object.values(obj) as ObjValueTuple<T>
+  // }
+  return createTransform((obj: T) => {
     return Object.values(obj) as ObjValueTuple<T>
-  }
+  })
 }
 
 export default values
