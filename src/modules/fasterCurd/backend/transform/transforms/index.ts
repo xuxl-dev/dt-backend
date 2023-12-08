@@ -1,7 +1,6 @@
 import { TransformFunction } from '..'
 
 import {
-  getContext,
   getInternalContext,
   beforeTransformToken,
   afterTransformToken,
@@ -59,3 +58,8 @@ export { default as some } from './some'
 export { default as keys } from './keys'
 export { dropContext, getContext, withContext } from './withContext'
 export { default as join } from './join'
+export { default as extract } from './extract'
+export { default as objectify } from './objectify'
+export { default as findAll } from './findAll'
+export { default as group } from './group'
+export { default as forallValues } from './forallValues'

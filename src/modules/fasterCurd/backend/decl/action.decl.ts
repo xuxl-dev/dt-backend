@@ -5,6 +5,7 @@ import {
   Only,
 } from 'src/utils/type.utils'
 import { FieldsOrReg, Fields } from 'src/utils/type.utils'
+import { TransformOf } from '../transform/builder'
 
 type ActionName = string
 
@@ -56,8 +57,9 @@ type ShapeOptions<T> =
 
 type ReadTransformOption<T> = {
   transform?: (form: any) => any
-  transformQueryRet?: (result: any) => any
-  TransformQueryRetInplace?: (result: any) => any
+  // transformQueryRet?: (result: T[]) => any
+  transformQueryRet?: ReturnType<TransformOf<T[]>>
+  TransformQueryRetInplace?: (result: T[]) => any
   TransformRecords?: (records: T[]) => T[]
   /**
    * This may affect delete (by changing the records to be deleted)
@@ -65,7 +67,7 @@ type ReadTransformOption<T> = {
    * @returns
    */
   TransformRecordInplace?: (record: T) => void
-  transformAfter?: (data: { form: any }, queryRet: any) => any
+  transformAfter?: (data: { form: any }, queryRet: T[]) => any
 }
 type UpdateTransformOption<T> = {
   transform?: (data: T) => T
