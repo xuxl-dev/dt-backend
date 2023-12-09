@@ -1,5 +1,5 @@
-import { createTransform } from '.'
-import { TransformFunction } from '..'
+import { createTransform } from '..'
+import { TransformFunction } from '../..'
 
 function map<T, A>(transform: (value: T) => A): TransformFunction<T[], A[]> {
   // return function mapper(array: T[]): A[] {

@@ -1,5 +1,5 @@
-import { createTransform } from '.'
-import { TransformFunction } from '..'
+import { createTransform } from '..'
+import { TransformFunction } from '../..'
 
 function pick<T = any, A extends (keyof T)[] = any>(
   ...fields: A

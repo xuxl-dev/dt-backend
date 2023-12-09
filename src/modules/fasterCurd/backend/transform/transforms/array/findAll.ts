@@ -1,5 +1,5 @@
-import { TransformFunction } from '..'
-import { createTransform } from './index'
+import { TransformFunction } from '../..'
+import { createTransform } from '../index'
 
 function findAll<T>(
   condition: (item: T) => boolean

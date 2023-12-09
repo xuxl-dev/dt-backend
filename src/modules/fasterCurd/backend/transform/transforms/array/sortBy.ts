@@ -1,5 +1,5 @@
-import { createTransform } from '.'
-import { TransformFunction } from '..'
+import { createTransform } from '..'
+import { TransformFunction } from '../..'
 
 function sort<T>(key: keyof T): TransformFunction<T[], T[]> {
   // return function sorter(array: T[]): T[] {

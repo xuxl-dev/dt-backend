@@ -1,5 +1,5 @@
-import { createTransform } from '.'
-import { TransformFunction } from '..'
+import { createTransform } from '..'
+import { TransformFunction } from '../..'
 
 function join<T extends string>(
   separator: string = ','

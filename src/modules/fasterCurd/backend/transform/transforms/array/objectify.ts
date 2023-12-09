@@ -1,5 +1,5 @@
-import { createTransform } from '.';
-import { TransformFunction } from '..';
+import { createTransform } from '..';
+import { TransformFunction } from '../..';
 
 // Inferring the tuple structure of the input array
 type TupleType<T extends any[]> = T;

@@ -1,5 +1,5 @@
-import { createTransform } from '.'
-import { TransformFunction } from '../builder'
+import { createTransform } from '..'
+import { TransformFunction } from '../../builder'
 
 function split<T>(chunkSize: number): TransformFunction<T[], T[][]> {
   // return function splitTransformer(array: T[]): T[][] {

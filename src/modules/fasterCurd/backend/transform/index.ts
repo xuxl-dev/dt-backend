@@ -12,8 +12,8 @@ import {
   join,
   applyInplcae,
 } from './transforms'
-import Do from './transforms/do'
-import { setContext } from './transforms/withContext'
+import Do from './transforms/misc/do'
+import { setContext } from './transforms/misc/withContext'
 export { TransformFunction }
 
 const obj = {
@@ -23,11 +23,12 @@ const obj = {
   d: 'javascript',
   e: 'faster-crud',
 }
+
 const transformsOf = getBuilder(obj)
 
 const transform = transformsOf(
   setContext({ foo: 'typescript', bar: 'context is avaliable' }),
-  withContext(() => rename({ a: 'aa' })),
+  rename({ a: 'aa' }),
   pick('aa', 'b', 'd'),
   withContext((ctx) => applyInplcae((o) => (o.d = ctx.foo))),
   values(),

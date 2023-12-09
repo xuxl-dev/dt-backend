@@ -1,5 +1,5 @@
-import { Warpper, createTransform } from '.'
-import { TransformFunction } from '..'
+import {  createTransform } from '..'
+import { TransformFunction } from '../..'
 
 function apply<T, U>(
   applier: (obj: T) => U

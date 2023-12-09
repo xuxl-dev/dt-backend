@@ -3,8 +3,8 @@ import {
   Warpper,
   __create_transform_pass_warper,
   createTransform,
-} from '.'
-import { TransformFunction } from '..'
+} from '..'
+import { TransformFunction } from '../..'
 
 export const contextSymbol = Symbol('__context')
 export const userContextSymbol = Symbol('__usercontext')

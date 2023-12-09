@@ -1,6 +1,6 @@
 import { merge, omit } from 'lodash'
-import { createTransform } from '.'
-import { TransformFunction } from '..'
+import { createTransform } from '..'
+import { TransformFunction } from '../..'
 
 type ModifiedPart<T, A extends Partial<{ [key in keyof T]: string }>> = {
   [K in keyof A]: K extends keyof T ? { [P in A[K]]: T[K] } : never

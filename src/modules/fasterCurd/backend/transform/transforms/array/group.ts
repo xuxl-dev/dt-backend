@@ -1,5 +1,5 @@
-import { createTransform } from '.'
-import { TransformFunction } from '..'
+import { createTransform } from '..'
+import { TransformFunction } from '../..'
 
 function group<T>(): TransformFunction<T[], Record<string, T[]>> {
   return createTransform((array: T[]) => {

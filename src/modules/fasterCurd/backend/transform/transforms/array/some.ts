@@ -1,5 +1,5 @@
-import { createTransform } from '.'
-import { TransformFunction } from '../builder'
+import { createTransform } from '..'
+import { TransformFunction } from '../../builder'
 
 function some<T>(
   condition: (item: T) => boolean
