@@ -1,5 +1,7 @@
+import { Warpper } from './transforms'
+
 export interface TransformFunction<T, R> {
-  (source: T): R
+  (source: Warpper<T>): Warpper<R>
 }
 class TransformBuilder<Target = any> {
   transform<A>(op1: TransformFunction<Target, A>): (data: Target) => A
@@ -52,7 +54,7 @@ class TransformBuilder<Target = any> {
     op7: TransformFunction<F, G>,
     op8: TransformFunction<G, H>
   ): (data: Target) => H
-  transform<A, B, C, D, E, F, G, H>(
+  transform<A, B, C, D, E, F, G, H, I>(
     op1: TransformFunction<Target, A>,
     op2: TransformFunction<A, B>,
     op3: TransformFunction<B, C>,
@@ -61,23 +63,252 @@ class TransformBuilder<Target = any> {
     op6: TransformFunction<E, F>,
     op7: TransformFunction<F, G>,
     op8: TransformFunction<G, H>,
+    op9: TransformFunction<H, I>
+  ): (data: Target) => I
+  transform<A, B, C, D, E, F, G, H, I, J>(
+    op1: TransformFunction<Target, A>,
+    op2: TransformFunction<A, B>,
+    op3: TransformFunction<B, C>,
+    op4: TransformFunction<C, D>,
+    op5: TransformFunction<D, E>,
+    op6: TransformFunction<E, F>,
+    op7: TransformFunction<F, G>,
+    op8: TransformFunction<G, H>,
+    op9: TransformFunction<H, I>,
+    op10: TransformFunction<I, J>
+  ): (data: Target) => J
+  transform<A, B, C, D, E, F, G, H, I, J, K>(
+    op1: TransformFunction<Target, A>,
+    op2: TransformFunction<A, B>,
+    op3: TransformFunction<B, C>,
+    op4: TransformFunction<C, D>,
+    op5: TransformFunction<D, E>,
+    op6: TransformFunction<E, F>,
+    op7: TransformFunction<F, G>,
+    op8: TransformFunction<G, H>,
+    op9: TransformFunction<H, I>,
+    op10: TransformFunction<I, J>,
+    op11: TransformFunction<J, K>
+  ): (data: Target) => K
+  transform<A, B, C, D, E, F, G, H, I, J, K, L>(
+    op1: TransformFunction<Target, A>,
+    op2: TransformFunction<A, B>,
+    op3: TransformFunction<B, C>,
+    op4: TransformFunction<C, D>,
+    op5: TransformFunction<D, E>,
+    op6: TransformFunction<E, F>,
+    op7: TransformFunction<F, G>,
+    op8: TransformFunction<G, H>,
+    op9: TransformFunction<H, I>,
+    op10: TransformFunction<I, J>,
+    op11: TransformFunction<J, K>,
+    op12: TransformFunction<K, L>
+  ): (data: Target) => L
+  transform<A, B, C, D, E, F, G, H, I, J, K, L, M>(
+    op1: TransformFunction<Target, A>,
+    op2: TransformFunction<A, B>,
+    op3: TransformFunction<B, C>,
+    op4: TransformFunction<C, D>,
+    op5: TransformFunction<D, E>,
+    op6: TransformFunction<E, F>,
+    op7: TransformFunction<F, G>,
+    op8: TransformFunction<G, H>,
+    op9: TransformFunction<H, I>,
+    op10: TransformFunction<I, J>,
+    op11: TransformFunction<J, K>,
+    op12: TransformFunction<K, L>,
+    op13: TransformFunction<L, M>
+  ): (data: Target) => M
+  transform<A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
+    op1: TransformFunction<Target, A>,
+    op2: TransformFunction<A, B>,
+    op3: TransformFunction<B, C>,
+    op4: TransformFunction<C, D>,
+    op5: TransformFunction<D, E>,
+    op6: TransformFunction<E, F>,
+    op7: TransformFunction<F, G>,
+    op8: TransformFunction<G, H>,
+    op9: TransformFunction<H, I>,
+    op10: TransformFunction<I, J>,
+    op11: TransformFunction<J, K>,
+    op12: TransformFunction<K, L>,
+    op13: TransformFunction<L, M>,
+    op14: TransformFunction<M, N>
+  ): (data: Target) => N
+  transform<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O>(
+    op1: TransformFunction<Target, A>,
+    op2: TransformFunction<A, B>,
+    op3: TransformFunction<B, C>,
+    op4: TransformFunction<C, D>,
+    op5: TransformFunction<D, E>,
+    op6: TransformFunction<E, F>,
+    op7: TransformFunction<F, G>,
+    op8: TransformFunction<G, H>,
+    op9: TransformFunction<H, I>,
+    op10: TransformFunction<I, J>,
+    op11: TransformFunction<J, K>,
+    op12: TransformFunction<K, L>,
+    op13: TransformFunction<L, M>,
+    op14: TransformFunction<M, N>,
+    op15: TransformFunction<N, O>
+  ): (data: Target) => O
+  transform<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P>(
+    op1: TransformFunction<Target, A>,
+    op2: TransformFunction<A, B>,
+    op3: TransformFunction<B, C>,
+    op4: TransformFunction<C, D>,
+    op5: TransformFunction<D, E>,
+    op6: TransformFunction<E, F>,
+    op7: TransformFunction<F, G>,
+    op8: TransformFunction<G, H>,
+    op9: TransformFunction<H, I>,
+    op10: TransformFunction<I, J>,
+    op11: TransformFunction<J, K>,
+    op12: TransformFunction<K, L>,
+    op13: TransformFunction<L, M>,
+    op14: TransformFunction<M, N>,
+    op15: TransformFunction<N, O>,
+    op16: TransformFunction<O, P>
+  ): (data: Target) => P
+  transform<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q>(
+    op1: TransformFunction<Target, A>,
+    op2: TransformFunction<A, B>,
+    op3: TransformFunction<B, C>,
+    op4: TransformFunction<C, D>,
+    op5: TransformFunction<D, E>,
+    op6: TransformFunction<E, F>,
+    op7: TransformFunction<F, G>,
+    op8: TransformFunction<G, H>,
+    op9: TransformFunction<H, I>,
+    op10: TransformFunction<I, J>,
+    op11: TransformFunction<J, K>,
+    op12: TransformFunction<K, L>,
+    op13: TransformFunction<L, M>,
+    op14: TransformFunction<M, N>,
+    op15: TransformFunction<N, O>,
+    op16: TransformFunction<O, P>,
+    op17: TransformFunction<P, Q>
+  ): (data: Target) => Q
+  transform<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R>(
+    op1: TransformFunction<Target, A>,
+    op2: TransformFunction<A, B>,
+    op3: TransformFunction<B, C>,
+    op4: TransformFunction<C, D>,
+    op5: TransformFunction<D, E>,
+    op6: TransformFunction<E, F>,
+    op7: TransformFunction<F, G>,
+    op8: TransformFunction<G, H>,
+    op9: TransformFunction<H, I>,
+    op10: TransformFunction<I, J>,
+    op11: TransformFunction<J, K>,
+    op12: TransformFunction<K, L>,
+    op13: TransformFunction<L, M>,
+    op14: TransformFunction<M, N>,
+    op15: TransformFunction<N, O>,
+    op16: TransformFunction<O, P>,
+    op17: TransformFunction<P, Q>,
+    op18: TransformFunction<Q, R>
+  ): (data: Target) => R
+  transform<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S>(
+    op1: TransformFunction<Target, A>,
+    op2: TransformFunction<A, B>,
+    op3: TransformFunction<B, C>,
+    op4: TransformFunction<C, D>,
+    op5: TransformFunction<D, E>,
+    op6: TransformFunction<E, F>,
+    op7: TransformFunction<F, G>,
+    op8: TransformFunction<G, H>,
+    op9: TransformFunction<H, I>,
+    op10: TransformFunction<I, J>,
+    op11: TransformFunction<J, K>,
+    op12: TransformFunction<K, L>,
+    op13: TransformFunction<L, M>,
+    op14: TransformFunction<M, N>,
+    op15: TransformFunction<N, O>,
+    op16: TransformFunction<O, P>,
+    op17: TransformFunction<P, Q>,
+    op18: TransformFunction<Q, R>,
+    op19: TransformFunction<R, S>
+  ): (data: Target) => S
+  transform<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T>(
+    op1: TransformFunction<Target, A>,
+    op2: TransformFunction<A, B>,
+    op3: TransformFunction<B, C>,
+    op4: TransformFunction<C, D>,
+    op5: TransformFunction<D, E>,
+    op6: TransformFunction<E, F>,
+    op7: TransformFunction<F, G>,
+    op8: TransformFunction<G, H>,
+    op9: TransformFunction<H, I>,
+    op10: TransformFunction<I, J>,
+    op11: TransformFunction<J, K>,
+    op12: TransformFunction<K, L>,
+    op13: TransformFunction<L, M>,
+    op14: TransformFunction<M, N>,
+    op15: TransformFunction<N, O>,
+    op16: TransformFunction<O, P>,
+    op17: TransformFunction<P, Q>,
+    op18: TransformFunction<Q, R>,
+    op19: TransformFunction<R, S>,
+    op20: TransformFunction<S, T>
+  ): (data: Target) => T
+  transform<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T>(
+    op1: TransformFunction<Target, A>,
+    op2?: TransformFunction<A, B>,
+    op3?: TransformFunction<B, C>,
+    op4?: TransformFunction<C, D>,
+    op5?: TransformFunction<D, E>,
+    op6?: TransformFunction<E, F>,
+    op7?: TransformFunction<F, G>,
+    op8?: TransformFunction<G, H>,
+    op9?: TransformFunction<H, I>,
+    op10?: TransformFunction<I, J>,
+    op11?: TransformFunction<J, K>,
+    op12?: TransformFunction<K, L>,
+    op13?: TransformFunction<L, M>,
+    op14?: TransformFunction<M, N>,
+    op15?: TransformFunction<N, O>,
+    op16?: TransformFunction<O, P>,
+    op17?: TransformFunction<P, Q>,
+    op18?: TransformFunction<Q, R>,
+    op19?: TransformFunction<R, S>,
+    op20?: TransformFunction<S, T>
+  ): (data: Target) => any
+  transform<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T>(
+    op1: TransformFunction<Target, A>,
+    op2?: TransformFunction<A, B>,
+    op3?: TransformFunction<B, C>,
+    op4?: TransformFunction<C, D>,
+    op5?: TransformFunction<D, E>,
+    op6?: TransformFunction<E, F>,
+    op7?: TransformFunction<F, G>,
+    op8?: TransformFunction<G, H>,
+    op9?: TransformFunction<H, I>,
+    op10?: TransformFunction<I, J>,
+    op11?: TransformFunction<J, K>,
+    op12?: TransformFunction<K, L>,
+    op13?: TransformFunction<L, M>,
+    op14?: TransformFunction<M, N>,
+    op15?: TransformFunction<N, O>,
+    op16?: TransformFunction<O, P>,
+    op17?: TransformFunction<P, Q>,
+    op18?: TransformFunction<Q, R>,
+    op19?: TransformFunction<R, S>,
+    op20?: TransformFunction<S, T>,
     ...rest: TransformFunction<any, any>[]
   ): (data: Target) => any
 
   transform(...ops: TransformFunction<any, any>[]) {
-    return <I>(data: I) => ops.reduce((acc, op) => op(acc), data)
+    return <I>(data: I) => ops.reduce((acc, op) => op(acc), { value: data }).value // always unwrap the value
   }
 }
 
 const builder = new TransformBuilder()
 
-function getBuilder<T>(target?: T) : TransformOf<T> {
+function getBuilder<T>(target?: T): TransformOf<T> {
   return (builder as unknown as TransformBuilder<T>).transform
   // return new TransformBuilder<T>()
 }
 export type TransformOf<T> = TransformBuilder<T>['transform']
 
-export {
-  getBuilder,
-  TransformBuilder
-}
+export { getBuilder, TransformBuilder }

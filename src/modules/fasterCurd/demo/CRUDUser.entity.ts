@@ -27,7 +27,7 @@ import { apply, find, findAll, forEach, forallValues, group, groupBy, map, objec
   method: 'read',
   transformQueryRet: getBuilder<CRUDUser[]>()(
     findAll((u) => u.type === 1),
-    forEach((u)=>u.name = u.name.substring(0, 5).toLocaleLowerCase()),
+    forEach((u)=>u.name = u.name.substring(0, 5).toLowerCase()),
     map((u) => u.split('').filter((c) => c === 'a').length),
     group(),
     forallValues((v) => v.length)

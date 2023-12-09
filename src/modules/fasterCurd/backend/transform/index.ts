@@ -2,7 +2,6 @@ import { getBuilder, TransformFunction } from './builder'
 import {
   pick,
   values,
-  getContext,
   apply,
   dropContext,
   withContext,
@@ -13,26 +12,32 @@ import {
   join,
   applyInplcae,
 } from './transforms'
+import { setContext } from './transforms/withContext'
 export { TransformFunction }
 
 const obj = {
   a: 'we',
   b: 'love',
-  jvav: 'java',
+  jvav: 'what',
   d: 'javascript',
   e: 'faster-crud',
 }
 const transformsOf = getBuilder(obj)
 
 const transform = transformsOf(
-  withContext({ foo: 'typescript' }), // context is passed to all transforms
-  rename({ jvav: 'shit' }), // we don't like this language!
-  omit('shit'), // ignore it!
-  pick('a', 'b', 'd'), // pick what we need: "we" "love" "javascript"
+  setContext({ foo: 'typescript' }), // context is passed to all transforms
+  withContext((ctx) => {
+    console.log(`context is:`, ctx)
+    return rename({ a: 'aa' })
+  }),
+
+  rename({ jvav: 'hmm' }), // we don't like this language!
+  omit('hmm'), // ignore it!
+  pick('aa', 'b', 'd'), // pick what we need: "we" "love" "javascript"
   // replace javascript with our favourite language
-  applyInplcae((o) => (o.d = getContext(o).foo)), 
+  withContext((ctx) => applyInplcae((o) => (o.d = ctx.foo))),
   // drop context, since we dont need it. It's okay not to drop it
-  dropContext(), 
+  dropContext(),
   values(), // convert the object to its values array
   map((s) => s.toUpperCase()), // make every of them captialized
   join(' ') // join them by space

@@ -1,7 +1,7 @@
-import { createTransform } from '.'
+import { Warpper, createTransform } from '.'
 import { TransformFunction } from '..'
 
-function Do<T, A>(transform: TransformFunction<T, A>): TransformFunction<T, A> {
+function Do<T, A>(transform: (obj: T) => A): TransformFunction<T, A> {
   // return function applier(obj?: T): A {
   //   return transform(obj)
   // }

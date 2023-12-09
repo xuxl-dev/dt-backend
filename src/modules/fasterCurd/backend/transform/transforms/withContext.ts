@@ -1,93 +1,89 @@
-import { InternalCtx, createTransform } from '.'
+import {
+  InternalCtx,
+  Warpper,
+  __create_transform_pass_warper,
+  createTransform,
+} from '.'
 import { TransformFunction } from '..'
 
-const contextSymbol = Symbol('__context')
-const userContextSymbol = Symbol('__usercontext')
+export const contextSymbol = Symbol('__context')
+export const userContextSymbol = Symbol('__usercontext')
 export const beforeTransformToken = 'beforeTransform'
 export const afterTransformToken = 'afterTransform'
 
-function withContext<T extends object>(
+function setContext<T extends object>(
   initialContext: any
 ): TransformFunction<T, T> {
-  const internalContext = {}
-  return function mapperFunction(obj: T): T {
-    const proxy = new Proxy(obj, {
-      get(target, prop, receiver) {
-        if (prop === userContextSymbol) {
-          return initialContext
-        }
+  return __create_transform_pass_warper((obj: T, warpper) => {
+    // const proxy = new Proxy(obj, {
+    //   get(target, prop, receiver) {
+    //     if (prop === userContextSymbol) {
+    //       return initialContext
+    //     }
 
-        if (prop === contextSymbol) {
-          return internalContext
-        }
+    //     if (prop === contextSymbol) {
+    //       return internalContext
+    //     }
 
-        return Reflect.get(target, prop, receiver)
-      }
-    })
+    //     return Reflect.get(target, prop, receiver)
+    //   }
+    // })
 
-    initContext(proxy)
-
-    return proxy as T
-  }
-}
-
-function dropContext<T extends object>(): TransformFunction<T, T> {
-  return createTransform((obj: T) => {
-    Reflect.deleteProperty(obj, contextSymbol);
-    Reflect.deleteProperty(obj, userContextSymbol);
-    
+    initContext(warpper)
+    warpper[userContextSymbol] = initialContext
     return obj as T
   })
 }
 
-/**
- * override the context
- * @param source
- * @param destination
- * @returns
- */
-function transferContext<T>(ctx: InternalCtx): T {
-  // if destination is primitive, do nothing
-  const { obj: source, result: destination } = ctx
-  if (typeof destination !== 'object') {
-    console.warn('transferContext: destination is not an object, stop transfer')
-    //TODO is this a better way to handle this?
-    // such as warp the values in an object?
-    return destination
+function dropContext<T extends object>(): TransformFunction<T, T> {
+  return createTransform((obj: T) => {
+    Reflect.deleteProperty(obj, contextSymbol)
+    Reflect.deleteProperty(obj, userContextSymbol)
+
+    return obj as T
+  })
+}
+
+function withContext<T, A>(
+  transform: (ctx) => TransformFunction<T, A>
+): TransformFunction<T, A> {
+  function transformer(warpper: Warpper<T>): Warpper<A> {
+    const context = getContext(warpper)
+
+    const ret = transform(context)(warpper)
+
+    return ret
   }
 
-  if (source == destination) {
-    return destination
-  }
-
-  if (source[contextSymbol]) {
-    destination[contextSymbol] = source[contextSymbol]
-  }
-
-  if (source[userContextSymbol]) {
-    destination[userContextSymbol] = source[userContextSymbol]
-  }
-
-  // console.log('transferContext', source, destination)
-
-  return destination
+  return transformer
 }
 
 function initContext(obj) {
   if (!obj[contextSymbol]) {
-    obj[contextSymbol] = {}
+    // obj[contextSymbol] = {}
+    Object.defineProperty(obj, contextSymbol, {
+      value: {},
+      enumerable: false,
+      writable: true,
+    })
   }
 
-  obj[contextSymbol][afterTransformToken] = [transferContext]
-  // console.log('initContext', obj)
+  if (!obj[userContextSymbol]) {
+    // obj[userContextSymbol] = {}
+    Object.defineProperty(obj, userContextSymbol, {
+      value: {},
+      enumerable: false,
+      writable: true,
+    })
+  }
 }
 
-export { withContext, dropContext }
+export { setContext, dropContext, withContext }
+
+export function getWrapperContext(obj: any): any {
+  return (obj as any)[contextSymbol]
+}
 
 export function getContext(obj: any): any {
   return (obj as any)[userContextSymbol]
-}
-
-export function getInternalContext(obj: any): any {
-  return (obj as any)[contextSymbol]
 }

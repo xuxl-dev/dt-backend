@@ -1,4 +1,4 @@
-import { createTransform } from '.'
+import { Warpper, createTransform } from '.'
 import { TransformFunction } from '..'
 
 function apply<T, U>(
@@ -11,17 +11,19 @@ function apply<T, U>(
 
 /**
  * Modify the object in place.
- * 
+ *
  * You must not change the reference of the object.
- * 
+ *
  * Only modify values is permitted.
- * 
+ *
  * do not modify fields, and changes in types will not be tracked.
- * 
- * @param applier 
- * @returns 
+ *
+ * @param applier
+ * @returns
  */
-export function applyInplcae<T>(applier: (obj: T) => void): TransformFunction<T, T> {
+export function applyInplcae<T>(
+  applier: (obj: T) => void
+): TransformFunction<T, T> {
   return createTransform((obj: T) => {
     applier(obj)
     return obj
