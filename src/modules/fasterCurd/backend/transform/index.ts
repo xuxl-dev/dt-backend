@@ -12,6 +12,7 @@ import {
   join,
   applyInplcae,
 } from './transforms'
+import Do from './transforms/do'
 import { setContext } from './transforms/withContext'
 export { TransformFunction }
 
@@ -25,22 +26,18 @@ const obj = {
 const transformsOf = getBuilder(obj)
 
 const transform = transformsOf(
-  setContext({ foo: 'typescript' }), // context is passed to all transforms
-  withContext((ctx) => {
-    console.log(`context is:`, ctx)
-    return rename({ a: 'aa' })
-  }),
-
-  rename({ jvav: 'hmm' }), // we don't like this language!
-  omit('hmm'), // ignore it!
-  pick('aa', 'b', 'd'), // pick what we need: "we" "love" "javascript"
-  // replace javascript with our favourite language
+  setContext({ foo: 'typescript', bar: 'context is avaliable' }),
+  withContext(() => rename({ a: 'aa' })),
+  pick('aa', 'b', 'd'),
   withContext((ctx) => applyInplcae((o) => (o.d = ctx.foo))),
-  // drop context, since we dont need it. It's okay not to drop it
-  dropContext(),
-  values(), // convert the object to its values array
-  map((s) => s.toUpperCase()), // make every of them captialized
-  join(' ') // join them by space
+  values(),
+  map((s) => s.toUpperCase()),
+  join(' '),
+  Do((s) => s.length),
+  withContext((ctx) =>
+    Do((o) => `${ctx.bar} is avaliable even if ${o} is ${typeof o}`)
+  )
 )
+
 console.log(`returns:`)
 console.log(transform(obj))
