@@ -7,7 +7,7 @@ import {
   getContext,
   contextSymbol,
   userContextSymbol,
-} from './misc/withContext'
+} from './misc/context'
 
 export type InternalCtx = {
   obj: any
@@ -100,7 +100,7 @@ function transferCtx(from, to) {
 
 export { default as values } from './object/values'
 export { default as pick } from './object/pick'
-export { default as apply, applyInplcae } from './misc/apply'
+export { default as apply } from './misc/apply'
 export { default as default } from './object/default'
 export { default as filter } from './object/filter'
 export { default as omit } from './object/omit'
@@ -115,10 +115,11 @@ export { default as find } from './array/find'
 export { default as every } from './array/every'
 export { default as some } from './array/some'
 export { default as keys } from './object/keys'
-export { dropContext, setContext, withContext} from './misc/withContext'
+export { dropContext, setContext, withContext } from './misc/context'
 export { default as join } from './array/join'
 export { default as extract } from './object/extract'
 export { default as objectify } from './array/objectify'
 export { default as findAll } from './array/findAll'
 export { default as group } from './array/group'
-export { default as forallValues } from './object/forallValues'
+export { default as forValues } from './object/forValues'
+export { default as toArray } from './array/toArray'

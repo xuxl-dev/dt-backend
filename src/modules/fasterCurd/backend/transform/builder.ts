@@ -3,6 +3,11 @@ import { Warpper } from './transforms'
 export interface TransformFunction<T, R> {
   (source: Warpper<T>): Warpper<R>
 }
+
+export function isTransformFunction<T, A>(transform: any): transform is TransformFunction<T, A> {
+  return typeof transform === 'function' && 'prototype' in transform && 'source' in transform('' as any);
+}
+
 class TransformBuilder<Target = any> {
   transform<A>(op1: TransformFunction<Target, A>): (data: Target) => A
   transform<A, B>(

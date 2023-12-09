@@ -1,7 +1,7 @@
 import { createTransform } from '..'
 import { TransformFunction } from '../..'
 
-function forallValues<T, U>(
+function forValues<T, U>(
   transform: (value: T) => U
 ): TransformFunction<{ [key: string]: T }, { [key: string]: U }> {
   return createTransform((obj: { [key: string]: T }) => {
@@ -15,4 +15,4 @@ function forallValues<T, U>(
   })
 }
 
-export default forallValues
+export default forValues

@@ -11,7 +11,20 @@ import {
 } from '../fc.decorators'
 import $ from '../crud-gen/fast-crud.decorator'
 import { getBuilder } from '../backend/transform/builder'
-import { apply, find, findAll, forEach, forallValues, group, groupBy, map, objectify, pick, rename, values } from '../backend/transform/transforms'
+import {
+  apply,
+  find,
+  findAll,
+  forValues,
+  group,
+  groupBy,
+  map,
+  objectify,
+  pick,
+  rename,
+  toArray,
+  values,
+} from '../backend/transform/transforms'
 
 @Entity()
 @Read({
@@ -27,11 +40,10 @@ import { apply, find, findAll, forEach, forallValues, group, groupBy, map, objec
   method: 'read',
   transformQueryRet: getBuilder<CRUDUser[]>()(
     findAll((u) => u.type === 1),
-    forEach((u)=>u.name = u.name.substring(0, 5).toLowerCase()),
-    map((u) => u.split('').filter((c) => c === 'a').length),
-    group(),
-    forallValues((v) => v.length)
-  )
+    map((u) => u.name.substring(0, 5).toLowerCase().split('').length),
+    groupBy((n) => n),
+    forValues((v) => v.length),
+  ),
 })
 @IgnoreField(['id'])
 @CRUD({ name: 'crud-user' })

@@ -45,7 +45,7 @@ function dropContext<T extends object>(): TransformFunction<T, T> {
 }
 
 function withContext<T, A>(
-  transform: (ctx) => TransformFunction<T, A>
+  transform: (ctx: any) => TransformFunction<T, A>
 ): TransformFunction<T, A> {
   function transformer(warpper: Warpper<T>): Warpper<A> {
     const context = getContext(warpper)

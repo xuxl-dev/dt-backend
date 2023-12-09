@@ -2,7 +2,7 @@ import { createTransform } from '..'
 import { TransformFunction } from '../..'
 
 function groupBy<T>(
-  key: keyof T | ((t: T) => string)
+  key: keyof T | ((t: T) => string | number)
 ): TransformFunction<T[], Record<string, T[]>> {
   return createTransform((array: T[]) => {
     const grouped: Record<string, T[]> = {}

@@ -3,17 +3,13 @@ import {
   pick,
   values,
   apply,
-  dropContext,
   withContext,
-  omit,
   rename,
   map,
-  reduce,
   join,
-  applyInplcae,
 } from './transforms'
 import Do from './transforms/misc/do'
-import { setContext } from './transforms/misc/withContext'
+import { setContext } from './transforms/misc/context'
 export { TransformFunction }
 
 const obj = {
@@ -30,7 +26,7 @@ const transform = transformsOf(
   setContext({ foo: 'typescript', bar: 'context is avaliable' }),
   rename({ a: 'aa' }),
   pick('aa', 'b', 'd'),
-  withContext((ctx) => applyInplcae((o) => (o.d = ctx.foo))),
+  withContext((ctx) => apply((o) => (o.d = ctx.foo))),
   values(),
   map((s) => s.toUpperCase()),
   join(' '),
