@@ -41,7 +41,7 @@ import {
   transformQueryRet: getBuilder<CRUDUser[]>()(
     findAll((u) => u.type === 1),
     map((u) => u.name.substring(0, 5).toLowerCase().split('').length),
-    groupBy((n) => n),
+    groupBy(),
     forValues((v) => v.length),
   ),
 })
