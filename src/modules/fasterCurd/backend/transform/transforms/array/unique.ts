@@ -1,10 +1,10 @@
 import { createTransform } from '..'
 import { TransformFunction } from '../..'
 
-function map<T, A>(transform: (value: T) => A): TransformFunction<T[], A[]> {
+function unique<T>(): TransformFunction<T[], T[]> {
   return createTransform((array: T[]) => {
-    return array.map(transform)
+    return Array.from(new Set(array))
   })
 }
 
-export default map
+export default unique

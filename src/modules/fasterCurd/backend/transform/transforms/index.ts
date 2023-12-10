@@ -4,7 +4,6 @@ import {
   getWrapperContext,
   beforeTransformToken,
   afterTransformToken,
-  getContext,
   contextSymbol,
   userContextSymbol,
 } from './misc/context'
@@ -84,20 +83,21 @@ export function __create_transform_pass_warper<T, U>(
   return transformer
 }
 
-function transferCtx(from, to) {
-  if (!from || !to || from === to) {
-    return
-  }
+// function transferCtx(from, to) {
+//   if (!from || !to || from === to) {
+//     return
+//   }
 
-  if (from[contextSymbol]) {
-    to[contextSymbol] = from[contextSymbol]
-  }
+//   if (from[contextSymbol]) {
+//     to[contextSymbol] = from[contextSymbol]
+//   }
 
-  if (from[userContextSymbol]) {
-    to[userContextSymbol] = from[userContextSymbol]
-  }
-}
+//   if (from[userContextSymbol]) {
+//     to[userContextSymbol] = from[userContextSymbol]
+//   }
+// }
 
+export { dropContext, setContext, withContext } from './misc/context'
 export { default as values } from './object/values'
 export { default as pick } from './object/pick'
 export { default as apply } from './misc/apply'
@@ -115,7 +115,6 @@ export { default as find } from './array/find'
 export { default as every } from './array/every'
 export { default as some } from './array/some'
 export { default as keys } from './object/keys'
-export { dropContext, setContext, withContext } from './misc/context'
 export { default as join } from './array/join'
 export { default as extract } from './object/extract'
 export { default as objectify } from './array/objectify'
@@ -123,3 +122,10 @@ export { default as findAll } from './array/findAll'
 export { default as group } from './array/group'
 export { default as forValues } from './object/forValues'
 export { default as toArray } from './array/toArray'
+export { default as shuffle } from './array/shuffle'
+export { default as unique } from './array/unique'
+export { default as flatten } from './array/flatten'
+export { default as trim } from './array/trim'
+export { default as slice } from './array/slice'
+export { default as toSet } from './set/toSet'
+export { default as sortObjectKeys } from './object/sortKeys'

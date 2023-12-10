@@ -2,7 +2,7 @@ import { createTransform } from '..'
 import { TransformFunction } from '../..'
 
 function groupBy<T>(
-  key: keyof T | ((t: T) => string | number)
+  key?: keyof T | ((t: T) => string | number)
 ): TransformFunction<T[], Record<string, T[]>> {
   return createTransform((array: T[]) => {
     const grouped: Record<string, T[]> = {}
@@ -16,7 +16,6 @@ function groupBy<T>(
           grouped[keyValue] = [item]
         }
       })
-
       return grouped
     } else if (typeof key === 'string') {
       array.forEach((item) => {
@@ -28,8 +27,18 @@ function groupBy<T>(
         }
       })
       return grouped
+    } else if (typeof key === 'undefined') {
+      // directly group by value
+      array.forEach((item) => {
+        const keyValue = String(item)
+        if (grouped[keyValue]) {
+          grouped[keyValue].push(item)
+        } else {
+          grouped[keyValue] = [item]
+        }
+      })
     } else {
-      throw new Error('key must be a string or a function')
+      throw new Error('key must be string or function')
     }
   })
 }
