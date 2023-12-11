@@ -3,7 +3,7 @@ import { createTransform } from '../index'
 
 function findAll<T>(
   condition: (item: T) => boolean
-): TransformFunction<T[], T[] | undefined> {
+): TransformFunction<T[], T[]> { //TODO null check?
   return createTransform(
     (array: T[]) => {
       return array.filter(condition)

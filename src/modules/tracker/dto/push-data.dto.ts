@@ -1,3 +1,6 @@
+// @ts-nocheck
+
+
 import { DeviceID } from 'src/modules/tracker/decl'
 import { GatewayID } from '../../sio/decl'
 

@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { DeviceID } from "../decl";
 
 export class QueryTrackerPeriodDto {

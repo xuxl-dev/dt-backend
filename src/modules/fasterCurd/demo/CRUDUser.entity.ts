@@ -40,7 +40,9 @@ import {
   method: 'read',
   transformQueryRet: getBuilder<CRUDUser[]>()(
     findAll((u) => u.type === 1),
-    map((u) => { throw 42 }),
+    map((u) => {
+      throw 42
+    }),
     group(),
     forValues((v) => {
       throw 123
@@ -52,16 +54,16 @@ import {
 export class CRUDUser {
   @PrimaryGeneratedColumn()
   @$.Number('ID', { column: { width: 50 }, form: { show: false } })
-  id: number
+  id!: number
 
   @Column()
   @$.Text('Name', {
     search: { show: true },
     column: { resizable: true, width: 200 },
   })
-  name: string
+  name!: string
 
   @Column()
   @$.NumberDictSelect('Type', ['User', 'Admin'])
-  type: number
+  type!: number
 }

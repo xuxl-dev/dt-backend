@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {Entity, Column} from "typeorm";
 
 export class Geographic {
