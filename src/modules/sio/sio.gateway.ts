@@ -1,12 +1,19 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit } from '@nestjs/websockets';
-import { SioService } from './sio.service';
-import { PushDataDto } from '../tracker/dto/push-data.dto';
-import { Logger } from '@nestjs/common';
-import { Server } from 'socket.io';
-import { PushDataService } from './handlers/push-data.service';
-import { ROOM_GEO } from './ROOM_GEO';
+import {
+  WebSocketGateway,
+  SubscribeMessage,
+  MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  OnGatewayInit,
+} from '@nestjs/websockets'
+import { SioService } from './sio.service'
+import { PushDataDto } from '../tracker/dto/push-data.dto'
+import { Logger } from '@nestjs/common'
+import { Server } from 'socket.io'
+import { PushDataService } from './handlers/push-data.service'
+import { ROOM_GEO } from './decl'
 
-const logger = new Logger('SIoGateway');
+const logger = new Logger('SIoGateway')
 @WebSocketGateway(3001, {
   cors: {
     origin: '*',
@@ -14,29 +21,31 @@ const logger = new Logger('SIoGateway');
     credentials: true,
   },
 })
-export class SioGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
+export class SioGateway
+  implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
+{
   constructor(
     private readonly sioService: SioService,
-    private readonly pushHandler: PushDataService,
-  ) { }
+    private readonly pushHandler: PushDataService
+  ) {}
 
   async handleConnection(socket: any, ...args: any[]) {
     try {
-      const user = await this.sioService.getUserFromSocket(socket);
-      socket.emit('connected', user);
-      socket.user = user;
-      await this.sioService.addSocket(user.id, socket);
-      socket.join(ROOM_GEO);
-      logger.debug(`user connected: ${user.id}`);
+      const user = await this.sioService.getUserFromSocket(socket)
+      socket.emit('connected', user)
+      socket.user = user
+      await this.sioService.addSocket(user.id, socket)
+      socket.join(ROOM_GEO)
+      logger.debug(`user connected: ${user.id}`)
     } catch (e) {
-      logger.debug(`invalid token: ${e}`);
-      socket.emit('connected', 'invalid token');
-      socket.disconnect(); // invalid token
+      logger.debug(`invalid token: ${e}`)
+      socket.emit('connected', 'invalid token')
+      socket.disconnect() // invalid token
     }
   }
 
   handleDisconnect(client: any) {
-    this.sioService.removeSocket(client.user.id);
+    this.sioService.removeSocket(client.user.id)
   }
 
   afterInit(server: Server) {
@@ -50,6 +59,6 @@ export class SioGateway implements OnGatewayConnection, OnGatewayDisconnect, OnG
 
     // forward to upper controller (if any)
 
-    return 'ack';
+    return 'ack'
   }
 }

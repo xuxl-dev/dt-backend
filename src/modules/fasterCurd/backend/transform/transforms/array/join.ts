@@ -7,7 +7,7 @@ function join<T extends string>(
   return createTransform((obj: T[]) => {
     const joinedString = obj.join(separator)
     return joinedString
-  })
+  },{name: join.name})
 }
 
 export default join

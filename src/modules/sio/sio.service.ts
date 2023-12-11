@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { AuthService } from '../auth/auth.service';
-import { Server, Socket } from 'socket.io';
-import { SessionManager } from './sessions';
-import { DEFAULT_ROOM } from './tokens';
+import { Injectable } from '@nestjs/common'
+import { AuthService } from '../auth/auth.service'
+import { Server, Socket } from 'socket.io'
+import { SessionManager } from './sessions'
+import { DEFAULT_ROOM } from "./decl"
 
 @Injectable()
 export class SioService {
@@ -10,15 +10,17 @@ export class SioService {
 
   constructor(
     private readonly authService: AuthService,
-    private readonly sessions: SessionManager,
-  ) { }
+    private readonly sessions: SessionManager
+  ) {}
 
   getJwtTokenFromSocket(socket: Socket) {
-    return socket.handshake.headers.authorization || socket.handshake.auth.token;
+    return socket.handshake.headers.authorization || socket.handshake.auth.token
   }
 
   async getUserFromSocket(socket: Socket) {
-    return await this.authService.getUserByToken(this.getJwtTokenFromSocket(socket));
+    return await this.authService.getUserByToken(
+      this.getJwtTokenFromSocket(socket)
+    )
   }
 
   async addSocket(id: number, socket: Socket) {

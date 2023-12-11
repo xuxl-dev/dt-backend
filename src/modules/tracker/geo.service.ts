@@ -19,7 +19,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { GeoData, GeoDataScheme } from './entities/push-geo.dto'
 import { SioService } from '../sio/sio.service'
-import { ROOM_GEO } from '../sio/ROOM_GEO'
+import { ROOM_GEO } from "../sio/decl"
 
 export const GeoUpdateObject: Subject<PushDataDto<GeoData>> = new Subject<
   PushDataDto<GeoData>

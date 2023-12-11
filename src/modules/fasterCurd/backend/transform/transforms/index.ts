@@ -16,7 +16,8 @@ export type Warpper<T> = {
 }
 
 export function createTransform<T, U>(
-  transformFn: (obj: T) => U
+  transformFn: (obj: T) => U,
+  config: { [key: string]: any } = {}
 ): TransformFunction<T, U> {
   function transformer(warpper: Warpper<T>): Warpper<U> {
     const context = getWrapperContext(warpper)
@@ -44,8 +45,14 @@ export function createTransform<T, U>(
     ret.value = result
     return ret
   }
+  transformer[transformNameSymbol] = config.name
 
   return transformer
+}
+
+const transformNameSymbol = Symbol('transformName')
+export function getTransformName(transformFn: TransformFunction<any, any>) {
+  return transformFn[transformNameSymbol] || `<unnamed>`
 }
 
 export function __create_transform_pass_warper<T, U>(

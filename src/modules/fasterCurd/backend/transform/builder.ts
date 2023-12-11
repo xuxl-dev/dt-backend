@@ -1,11 +1,17 @@
-import { Warpper } from './transforms'
+import { Warpper, getTransformName } from './transforms'
 
 export interface TransformFunction<T, R> {
   (source: Warpper<T>): Warpper<R>
 }
 
-export function isTransformFunction<T, A>(transform: any): transform is TransformFunction<T, A> {
-  return typeof transform === 'function' && 'prototype' in transform && 'source' in transform('' as any);
+export function isTransformFunction<T, A>(
+  transform: any
+): transform is TransformFunction<T, A> {
+  return (
+    typeof transform === 'function' &&
+    'prototype' in transform &&
+    'source' in transform('' as any)
+  )
 }
 
 class TransformBuilder<Target = any> {
@@ -304,7 +310,20 @@ class TransformBuilder<Target = any> {
   ): (data: Target) => any
 
   transform(...ops: TransformFunction<any, any>[]) {
-    return <I>(data: I) => ops.reduce((acc, op) => op(acc), { value: data }).value // always unwrap the value
+    // return <I>(data: I) => ops.reduce((acc, op) => op(acc), { value: data }).value // always unwrap the value
+    return <I>(data: I) => {
+      let result = {
+        value: data,
+      } as any
+      for (const op of ops) {
+        try {
+          result = op(result)
+        } catch (e) {
+          throw `Error in transform: ${getTransformName(op)}, throwing ${e}`
+        }
+      }
+      return result.value as any
+    }
   }
 }
 

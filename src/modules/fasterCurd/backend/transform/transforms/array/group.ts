@@ -15,7 +15,7 @@ function group<T>(): TransformFunction<T[], Record<string, T[]>> {
     })
 
     return grouped
-  })
+  }, {name: group.name})
 }
 
 export default group

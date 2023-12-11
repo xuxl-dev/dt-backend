@@ -40,7 +40,7 @@ function groupBy<T>(
     } else {
       throw new Error('key must be string or function')
     }
-  })
+  }, {name: groupBy.name})
 }
 
 export default groupBy

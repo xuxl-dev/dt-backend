@@ -193,8 +193,9 @@ export class FasterCrudService {
         log(`transformed after:`, after)
         return after
       } catch (e) {
-        logger.error(`error when executing method ${method.name}:`, e)
-        throw new Error(e.message)
+        logger.error(`error when executing method (named: ${method.name}):`)
+        log(e)
+        throw new Error(e)
       }
     }
   }

@@ -4,9 +4,12 @@ import { createTransform } from '../index'
 function findAll<T>(
   condition: (item: T) => boolean
 ): TransformFunction<T[], T[] | undefined> {
-  return createTransform((array: T[]) => {
-    return array.filter(condition)
-  })
+  return createTransform(
+    (array: T[]) => {
+      return array.filter(condition)
+    },
+    { name: findAll.name }
+  )
 }
 
 export default findAll
