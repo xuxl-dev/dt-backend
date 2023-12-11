@@ -100,8 +100,6 @@ export function CRUD<T extends { new (...args: any[]): InstanceType<T> }>(
   }
 }
 
-
-
 export type ConfigCtx<T extends ObjectLiteral = any> = {
   // option: ActionOptions<T>
   option: LabeledActionOptions<T, any>
@@ -124,9 +122,9 @@ export function Create<T extends ClassType<T>, K1>(
   options: CreateActionOption<InstanceType<T>, K1>
 ) {
   return Action<T, K1>({
+    action: 'create', // this can be overrided by options.action
     ...options,
     method: 'create',
-    action: 'create',
   } as CreateOption<InstanceType<T>, K1>)
 }
 
@@ -134,9 +132,9 @@ export function Read<T extends ClassType<T>, K1>(
   options: ReadActionOption<InstanceType<T>, K1>
 ) {
   return Action<T, K1>({
+    action: 'read', // this can be overrided by options.action
     ...options,
     method: 'read',
-    action: 'read',
   } as ReadOption<InstanceType<T>, K1>)
 }
 
@@ -144,9 +142,9 @@ export function Update<T extends ClassType<T>, K1>(
   options: UpdateActionOption<InstanceType<T>, K1>
 ) {
   return Action<T, K1>({
+    action: 'update', // this can be overrided by options.action
     ...options,
     method: 'update',
-    action: 'update',
   } as UpdateOption<InstanceType<T>, K1>)
 }
 
@@ -154,9 +152,9 @@ export function Delete<T extends ClassType<T>, K1>(
   options: DeleteActionOption<InstanceType<T>, K1>
 ) {
   return Action<T, K1>({
+    action: 'delete', // this can be overrided by options.action
     ...options,
     method: 'delete',
-    action: 'delete',
   } as DeleteOption<InstanceType<T>, K1>)
 }
 
