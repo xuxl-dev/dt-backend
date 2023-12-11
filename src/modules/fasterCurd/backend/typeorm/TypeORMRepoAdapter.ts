@@ -18,7 +18,8 @@ export class TypeORMRepoAdapter<T extends ObjectLiteral>
   async read(query: PageQuery<T>): Promise<PageRes<T>> {
     // console.log(query)
     // if has no page
-    if (!query.page) { //TODO extract this to paged transformer
+    if (!query.page) {
+      //TODO extract this to paged transformer
       const [ret, count] = await this.repo.findAndCount({
         where: query.form,
         order: this.parseSort<T>(query.sort) as any,

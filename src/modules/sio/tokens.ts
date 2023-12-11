@@ -1,1 +1,1 @@
-export const DEFAULT_ROOM = `default`
+
