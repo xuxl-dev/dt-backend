@@ -71,16 +71,16 @@ type ReadTransformOption<T> = {
 }
 type UpdateTransformOption<T> = {
   transform?: (data: T) => T
-  transformQueryRet?: (result: any) => any
-  TransformQueryRetInplace?: (result: any) => any
+  transformQueryRet?: (result: UpdateResult) => any
+  TransformQueryRetInplace?: (result: UpdateResult) => any
   TransformRecords?: (record: any) => any
   TransformRecordsInplace?: (record: T) => any
   transformAfter?: (data: { form: T }, queryRet: any) => any
 }
 type DeleteTransformOption<T> = {
   transform?: (data: { row: T }) => Partial<T> | any
-  transformQueryRet?: (result: any) => any
-  TransformQueryRetInplace?: (result: any) => any
+  transformQueryRet?: (result: DeleteResult) => any
+  TransformQueryRetInplace?: (result: DeleteResult) => any
   TransformRecords?: (record: any) => any
   TransformRecordsInplace?: (record: T) => any
   transformAfter?: (data: { form: T }, queryRet: any) => any

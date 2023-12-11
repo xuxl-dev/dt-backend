@@ -16,7 +16,7 @@ export class TypeORMRepoAdapter<T extends ObjectLiteral>
 {
   constructor(private readonly repo: Repository<T>) {}
   async read(query: PageQuery<T>): Promise<PageRes<T>> {
-    console.log(query)
+    // console.log(query)
     // if has no page
     if (!query.page) { //TODO extract this to paged transformer
       const [ret, count] = await this.repo.findAndCount({
@@ -30,8 +30,6 @@ export class TypeORMRepoAdapter<T extends ObjectLiteral>
         total: count,
       }
     }
-
-
 
     //TODO add convert
     const [ret, count] = await this.repo.findAndCount({
