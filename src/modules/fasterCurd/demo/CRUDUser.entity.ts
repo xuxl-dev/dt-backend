@@ -41,8 +41,8 @@ import {
   transformQueryRet: getBuilder<CRUDUser[]>()(
     findAll((u) => u.type === 1),
     map((u) => u.name.substring(0, 5).toLowerCase().split('').length),
-    groupBy(),
-    forValues((v) => v.length),
+    group(),
+    forValues((v) => v.length)
   ),
 })
 @IgnoreField(['id'])

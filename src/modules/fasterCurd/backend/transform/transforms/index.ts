@@ -4,8 +4,6 @@ import {
   getWrapperContext,
   beforeTransformToken,
   afterTransformToken,
-  contextSymbol,
-  userContextSymbol,
 } from './misc/context'
 
 export type InternalCtx = {
