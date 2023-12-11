@@ -12,7 +12,7 @@ function forValues<T, U>(
       }
     }
     return result
-  })
+  }, { name: forValues.name })
 }
 
 export default forValues

@@ -6,7 +6,7 @@ function map<T, A>(transform: (value: T) => A): TransformFunction<T[], A[]> {
     (array: T[]) => {
       return array.map(transform)
     },
-    { name: 'map' }
+    { name: map.name }
   )
 }
 

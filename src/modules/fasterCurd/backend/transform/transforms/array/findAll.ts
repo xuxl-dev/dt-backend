@@ -8,7 +8,7 @@ function findAll<T>(
     (array: T[]) => {
       return array.filter(condition)
     },
-    { name: 'findAll' }
+    { name: findAll.name }
   )
 }
 

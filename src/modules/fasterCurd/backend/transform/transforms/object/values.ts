@@ -43,9 +43,12 @@ function values<T extends { [key: string]: any }>(): TransformFunction<
   // return function valuesFunction(obj: T): ObjValueTuple<T> {
   //   return Object.values(obj) as ObjValueTuple<T>
   // }
-  return createTransform((obj: T) => {
-    return Object.values(obj) as ObjValueTuple<T>
-  })
+  return createTransform(
+    (obj: T) => {
+      return Object.values(obj) as ObjValueTuple<T>
+    },
+    { name: values.name }
+  )
 }
 
 export default values

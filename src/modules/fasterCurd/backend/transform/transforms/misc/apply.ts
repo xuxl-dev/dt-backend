@@ -1,4 +1,4 @@
-import {  createTransform } from '..'
+import { createTransform } from '..'
 import { TransformFunction } from '../..'
 
 function apply<T, U>(
@@ -6,13 +6,19 @@ function apply<T, U>(
   inPlace: boolean = true
 ): TransformFunction<T, U> {
   if (inPlace) {
-    return createTransform((obj: T) => {
-      return applier(obj)
-    })
+    return createTransform(
+      (obj: T) => {
+        return applier(obj)
+      },
+      { name: apply.name + 'InPlace' }
+    )
   } else {
-    return createTransform((obj: T) => {
-      return applier({ ...obj })
-    })
+    return createTransform(
+      (obj: T) => {
+        return applier({ ...obj })
+      },
+      { name: apply.name }
+    )
   }
 }
 

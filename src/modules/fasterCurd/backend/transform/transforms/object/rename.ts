@@ -21,16 +21,19 @@ type MappedName<
 function rename<T, A extends Partial<{ [key in keyof T]: string }>>(
   renames: A
 ): TransformFunction<T, MappedName<T, A>> {
-  return createTransform((obj: T) => {
-    const renamedObj = {} as any
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key) && renames[key]) {
-        renamedObj[renames[key]] = obj[key]
+  return createTransform(
+    (obj: T) => {
+      const renamedObj = {} as any
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key) && renames[key]) {
+          renamedObj[renames[key]] = obj[key]
+        }
       }
-    }
-    //TODO remove dependency on lodash
-    return merge(renamedObj, omit(obj as object, Object.keys(renames)))
-  })
+      //TODO remove dependency on lodash
+      return merge(renamedObj, omit(obj as object, Object.keys(renames)))
+    },
+    { name: rename.name }
+  )
 }
 
 export default rename

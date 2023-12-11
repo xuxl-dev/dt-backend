@@ -36,12 +36,15 @@ function setContext<T extends object>(
 }
 
 function dropContext<T extends object>(): TransformFunction<T, T> {
-  return createTransform((obj: T) => {
-    Reflect.deleteProperty(obj, contextSymbol)
-    Reflect.deleteProperty(obj, userContextSymbol)
+  return createTransform(
+    (obj: T) => {
+      Reflect.deleteProperty(obj, contextSymbol)
+      Reflect.deleteProperty(obj, userContextSymbol)
 
-    return obj as T
-  })
+      return obj as T
+    },
+    { name: dropContext.name }
+  )
 }
 
 function withContext<T, A>(
