@@ -5,5 +5,5 @@ export enum UserStatus {
 }
 
 export class Usermeta {
-  status: UserStatus
+  status!: UserStatus
 }

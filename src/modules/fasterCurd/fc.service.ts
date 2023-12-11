@@ -86,7 +86,7 @@ export class FasterCrudService {
     )
     // merge base methods
     this.merge(baseMethods, options)
-    console.log(options)
+    // console.log(options)
     const docs: any = { crud: {}, dict }
     for (const action of Object.keys(options)) {
       const option: LabeledActionOptions<T> = options[action]

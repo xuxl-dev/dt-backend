@@ -30,7 +30,7 @@ export class AuthController {
     const ret = {
       jwt: await this.authService.login(req.user),
       status: 'ok',
-      type: login.type,
+      // type: login.type,
       currentAuthority: req.user.role,
       ...req.user,
     }

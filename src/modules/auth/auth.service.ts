@@ -49,7 +49,7 @@ export class AuthService {
       'token:',
       async () => token,
       this.configService.get('JWT_EXPIRES_IN_SEC') ?? 86400,
-      user.id.toString()
+      user.id!.toString()
     )
 
     return token

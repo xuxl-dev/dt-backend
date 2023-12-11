@@ -1,8 +1,8 @@
+// @ts-nocheck
 import { BaseEntity, BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, JoinTable, ManyToMany, OneToMany, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 import * as bcrypt from 'bcryptjs';
 import { Exclude } from 'class-transformer';
 import { Attr } from "../../auth/entities/attr.entity";
-
 
 @Entity('user')
 export class User extends BaseEntity {
