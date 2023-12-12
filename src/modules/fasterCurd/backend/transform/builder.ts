@@ -329,8 +329,8 @@ class TransformBuilder<Target = any> {
 
 const builder = new TransformBuilder()
 
-function getBuilder<T>(target?: T): TransformOf<T> {
-  return (builder as unknown as TransformBuilder<T>).transform
+function getBuilder<T>(): TransformOf<T> {
+  return (builder as unknown as TransformBuilder<T>).transform!
   // return new TransformBuilder<T>()
 }
 export type TransformOf<T> = TransformBuilder<T>['transform']

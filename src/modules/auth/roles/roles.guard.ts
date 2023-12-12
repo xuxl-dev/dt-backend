@@ -18,7 +18,7 @@ export class RolesGuard implements CanActivate {
 }
 
 function matchRoles(roles: string[], role: any): boolean {
-  const roleValue = RolesEnum[role];
+  const roleValue = RolesEnum[role] as unknown as number //why?
   if (roleValue === undefined) {
     return false;
   }
@@ -29,5 +29,6 @@ function matchRoles(roles: string[], role: any): boolean {
     }
     return roleValue < acc ? roleValue : acc;
   }, RolesEnum.sa);
+  
   return roleValue >= lowestRole;
 }

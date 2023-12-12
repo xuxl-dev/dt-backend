@@ -1,7 +1,7 @@
 import { createTransform } from '..'
 import { TransformFunction } from '../..'
 
-function pick<T = any, A extends (keyof T)[] = any>(
+function pick<T extends object, A extends (keyof T)[]>(
   ...fields: A
 ): TransformFunction<T, Pick<T, A[number]>> {
   return createTransform(

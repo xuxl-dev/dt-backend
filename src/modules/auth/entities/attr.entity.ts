@@ -10,8 +10,8 @@ export type AttrNode = {
 @Entity('attr')
 export class Attr {
   @PrimaryGeneratedColumn('increment')
-  id: number;
+  id!: number;
 
   @Column({ type: 'json', nullable: true })
-  attribute: AttrNode;
+  attribute!: AttrNode;
 }

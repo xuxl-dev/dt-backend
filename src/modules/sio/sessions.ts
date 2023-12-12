@@ -19,6 +19,10 @@ export class SessionManager {
 
   delete(user: number) {
     const socket = this.userToSocketMap.get(user)
+    if (!socket) {
+      return
+    }
+
     this.userToSocketMap.delete(user)
     this.socketToUserMap.delete(socket)
   }

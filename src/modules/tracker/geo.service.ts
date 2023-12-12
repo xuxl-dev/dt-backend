@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { Subject } from 'rxjs'
 import {
   auditTime,
@@ -19,11 +19,14 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { GeoData, GeoDataScheme } from './entities/push-geo.dto'
 import { SioService } from '../sio/sio.service'
-import { ROOM_GEO } from "../sio/decl"
+import { ROOM_GEO } from '../sio/decl'
+import { createPoint2D } from './GeoUtils'
 
 export const GeoUpdateObject: Subject<PushDataDto<GeoData>> = new Subject<
   PushDataDto<GeoData>
 >()
+
+const logger = new Logger('GeoService')
 
 @Injectable()
 export class GeoService {
@@ -67,26 +70,45 @@ export class GeoService {
       })
   }
 
-  async flushCacheToDb(id: DeviceID) {
-    const deviceGeo = GeoDataScheme.parse(
-      JSON.parse(
-        await this.redisService.get(getTrackerRedisName(id))
-      ) as GeoData
-    )
-    console.log('flushing cache to db', deviceGeo)
-
-    // save to db
-    this.trackerRepository.upsert(
-      {
-        id: id,
-        location: {
-          type: 'Point',
-          coordinates: [deviceGeo.longitude, deviceGeo.latitude],
-        },
-      },
-      {
-        conflictPaths: ['id'],
+  async flushCacheToDb(deviceId: DeviceID) {
+    try {
+      // Retrieve geo data from Redis
+      const geoDataFromRedis = await this.redisService.get(
+        getTrackerRedisName(deviceId)
+      )
+      if (!geoDataFromRedis) {
+        logger.warn(
+          `No geo data found in Redis for device ${deviceId}. Skipping flush to DB.`
+        )
+        return
       }
-    )
+
+      // Parse geo data and handle null case
+      const geoData = JSON.parse(geoDataFromRedis)?.content as GeoData
+      const deviceGeo = GeoDataScheme.safeParse(geoData)
+      if (deviceGeo.success === false) {
+        logger.warn(
+          `Error while parsing geo data from Redis for device ${deviceId}:`,
+          deviceGeo.error
+        )
+        return
+      }
+
+      // Upsert the location to the tracker repository
+      this.trackerRepository.upsert(
+        {
+          id: deviceId,
+          location: createPoint2D(deviceGeo.data),
+        },
+        {
+          conflictPaths: ['id'],
+        }
+      )
+    } catch (error) {
+      logger.warn(
+        `Error while flushing cache to DB for device ${deviceId}:`,
+        error
+      )
+    }
   }
 }

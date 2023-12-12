@@ -1,7 +1,7 @@
 import { createTransform } from '..'
 import { TransformFunction } from '../..'
 
-function filter<T = any>(
+function filter<T extends object>(
   predicate: (value: T[keyof T]) => boolean
 ): TransformFunction<T, Partial<T>> {
   return createTransform(

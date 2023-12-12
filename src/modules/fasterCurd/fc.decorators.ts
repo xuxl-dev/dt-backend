@@ -45,13 +45,13 @@ export type FieldOptionsObject = {
 }
 
 export function Field(opt: FieldOptions = {}): PropertyDecorator {
-  return function (target: any, key: string) {
+  return function (target: Object, key: string | symbol) {
     let { name, type } = opt
     const _type_constructor = Reflect.getMetadata('design:type', target, key)
     const _name = key
     // const _key = Symbol(key);
 
-    name = name || _name
+    name = (name || _name || key.toString()) as string
     type = type || _type_constructor.name
     const newOption = Object.assign(opt, {
       name,

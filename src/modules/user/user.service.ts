@@ -66,9 +66,9 @@ export class UserService {
     return this.usersRepository.findOne({ where: { username }});
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
+  async update(id: number, updateUserDto: UpdateUserDto) {
     if (isNaN(id)) throw new HttpException('id must be a number', HttpStatus.BAD_REQUEST);
-    const userexist = this.usersRepository.findOne({ where: { id }});
+    const userexist = await this.usersRepository.findOne({ where: { id }});
     if (userexist) {
       this.usersRepository.update(id, updateUserDto);
     } else {
@@ -76,9 +76,9 @@ export class UserService {
     }
   }
 
-  remove(id: number) {
+  async remove(id: number) {
     if (isNaN(id)) throw new HttpException('id must be a number', HttpStatus.BAD_REQUEST);
-    const userexist = this.usersRepository.findOne({ where: { id }});
+    const userexist = await this.usersRepository.findOne({ where: { id }});
     if (userexist) {
       this.usersRepository.delete(id);
     } else {

@@ -32,6 +32,10 @@ export class TypeORMRepoAdapter<T extends ObjectLiteral>
       }
     }
 
+    if (!query.page.currentPage || !query.page.pageSize) {
+      throw new Error(`invalid page`)
+    }
+
     //TODO add convert
     const [ret, count] = await this.repo.findAndCount({
       where: query.form,
@@ -49,22 +53,34 @@ export class TypeORMRepoAdapter<T extends ObjectLiteral>
   }
 
   async create({ form }: AddReq<T>) {
+    if (!form) {
+      throw new Error(`invalid form`)
+    }
     return await this.repo.insert(form)
   }
 
   async update({ form, row }: EditReq<T>) {
+    if (!row) {
+      throw new Error(`invalid row`)
+    }
+    if (!form) {
+      throw new Error(`invalid form`)
+    }
     return await this.repo.update(row, form)
   }
 
   async delete({ row }: DelReq<T>) {
+    if (!row) {
+      throw new Error(`invalid row`)
+    }
     return await this.repo.delete(row)
   }
 
-  parseSort<T>(sort: PageSort<T> | { [key in keyof T]?: 'ASC' | 'DESC' }): {
+  parseSort<T>(sort?: PageSort<T> | { [key in keyof T]?: 'ASC' | 'DESC' }): {
     [key in keyof T]?: 'ASC' | 'DESC'
   } {
     if (!sort) {
-      return null
+      return {}
     }
     if (Object.values(sort).every((v) => v === 'ASC' || v === 'DESC')) {
       //TODO clean up

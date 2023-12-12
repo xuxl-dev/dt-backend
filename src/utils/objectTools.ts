@@ -4,7 +4,7 @@ type ObjectWithNullableProps<T> = {
   [K in keyof T]: T[K] | null
 }
 
-export function deconstrcuOrNull<T>(obj: T): ObjectWithNullableProps<T> {
+export function deconstrcuOrNull<T extends object>(obj: T): ObjectWithNullableProps<T> {
   const result: ObjectWithNullableProps<T> = {} as ObjectWithNullableProps<T>
 
   Object.keys(obj).forEach((key) => {

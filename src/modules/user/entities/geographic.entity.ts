@@ -1,11 +1,9 @@
-import {Entity, Column} from "typeorm";
+import { Column } from 'typeorm'
 
 export class Geographic {
-    
-    @Column()
-    province: string;
-    
-    @Column()
-    city: string;
-    
+  @Column()
+  province: string
+
+  @Column()
+  city: string
 }

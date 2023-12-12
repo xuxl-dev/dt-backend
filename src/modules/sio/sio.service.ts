@@ -6,7 +6,7 @@ import { DEFAULT_ROOM } from "./decl"
 
 @Injectable()
 export class SioService {
-  private server: Server = null
+  private server: Server | null = null
 
   constructor(
     private readonly authService: AuthService,
@@ -39,6 +39,10 @@ export class SioService {
   }
 
   async broadcastToGroup(group: string, event: string, data: any) {
+    if (!this.server) {
+      throw new Error('server not bind')
+    }
+
     this.server.to(group).emit(event, data)
   }
 
