@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import { BaseEntity, Column, Entity, Geometry, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()

@@ -2,9 +2,10 @@ import { merge, omit } from 'lodash'
 import { createTransform } from '..'
 import { TransformFunction } from '../..'
 
+
 type ModifiedPart<T, A extends Partial<{ [key in keyof T]: string }>> = {
   // @ts-ignore
-  [K in keyof A]: K extends keyof T ? { [P in A[K]]: T[K] } : never
+  [K in keyof A]: K extends keyof T ? { [P in A[K]]: T[K] } : never // TODO check this
 }[keyof A]
 
 // type UnModifiedPart<T, A extends Partial<{ [key in keyof T]: string }>> = {

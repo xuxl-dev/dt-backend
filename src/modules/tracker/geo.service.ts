@@ -98,7 +98,7 @@ export class GeoService {
       this.trackerRepository.upsert(
         {
           id: deviceId,
-          location: createPoint2D(deviceGeo.data)
+          location: createPoint2D(deviceGeo.data),
         },
         {
           conflictPaths: ['id'],

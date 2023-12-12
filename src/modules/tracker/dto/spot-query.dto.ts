@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 export class QuerySpotPeriodDto {
   center: [number, number]
 

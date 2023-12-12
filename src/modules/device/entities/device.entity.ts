@@ -1,4 +1,3 @@
-//@ts-nocheck
 import { Column, PrimaryGeneratedColumn } from 'typeorm'
 
 export class Device {

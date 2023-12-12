@@ -93,8 +93,8 @@ export class CacheService {
             : ((await this.redisService.do(e => e.hget(s, key))) as string)
         if (cache === null || cache === undefined) {
             cache = await fn()
-            // @ts-ignore
-            await this.redisService.do(e => e.hset(s, key, cache.toString()))
+            if (!cache) return null as any
+            await this.redisService.do(e => e.hset(s, key, cache!.toString()))
             // return in advance because cache here is not a string anymore
             return cache
         }
@@ -115,7 +115,7 @@ export class CacheService {
     async getHashes<V extends { toString: () => string }>(
         fnGenAll: () => PromiseLike<{ [key: string]: V }>,
         fnGenOne: ((key: string) => V) | null,
-        keys: Array<string>,
+        keys: string[],
         symbol?: string,
         ttl?: number,
         forceRefresh?: boolean,
@@ -125,8 +125,7 @@ export class CacheService {
         let cache: { [key: string]: V | string } | null = forceRefresh
             ? null
             : await (async () => {
-                // @ts-ignore
-                  const vals = (await this.redisService.do(e => e.hmget(s, keys))) as string[]
+                  const vals = (await this.redisService.do(e => e.hmget(s, ...keys))) as string[]
                   return keys.reduce((map, key, index) => {
                       map[key] = vals[index]
                       return map
@@ -134,12 +133,10 @@ export class CacheService {
               })()
         if (cache === null || cache === undefined) {
             cache = await fnGenAll()
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            await this.redisService.do(e => e.hmset(s, Object.entries(cache).flat()))
+            if (!cache) return {}
+            await this.redisService.do(e => e.hmset(s, Object.entries(cache!).flat()))
             if (ttl) await this.redisService.do(e => e.expire(s, ttl))
-            // @ts-ignore
-            const vals = (await this.redisService.do(e => e.hmget(s, keys))) as string[]
+            const vals = (await this.redisService.do(e => e.hmget(s, ...keys))) as string[]
             return keys.reduce((map, key, index) => {
                 map[key] = vals[index]
                 return map
@@ -156,12 +153,10 @@ export class CacheService {
                     newlyGenerated.push(k, g.toString())
                 } else {
                     cache = await fnGenAll()
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    await this.redisService.do(e => e.hmset(s, Object.entries(cache).flat()))
+                    if (!cache) return {}
+                    await this.redisService.do(e => e.hmset(s, Object.entries(cache!).flat()))
                     if (ttl) await this.redisService.do(e => e.expire(s, ttl))
-                    // @ts-ignore
-                    const vals = await this.redisService.do(e => e.hmget(s, keys))
+                    const vals = await this.redisService.do(e => e.hmget(s, ...keys))
                     return keys.reduce((map, key, index) => {
                         map[key] = vals[index]
                         return map
