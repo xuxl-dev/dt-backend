@@ -29,7 +29,7 @@ export class JwtStorage extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('User not found')
     }
     // if expired, token is not in redis
-    const token = await this.cacheService.get('token:', user.id.toString())
+    const token = await this.cacheService.get('token:', user?.id?.toString())
     if (!token) {
       throw new UnauthorizedException('Token expired')
     }
@@ -47,7 +47,7 @@ export class JwtStorage extends PassportStrategy(Strategy) {
       'token:',
       async () => token,
       this.configService.get('JWT_EXPIRES_IN_SEC') ?? 86400,
-      user.id.toString()
+      user.id!.toString()
     )
 
     return existUser

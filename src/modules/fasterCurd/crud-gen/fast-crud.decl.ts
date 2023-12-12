@@ -23,7 +23,7 @@ export type Page = {
 /**
  * 查询排序参数
  */
-export type PageSort<T extends ObjectLiteral> = {
+export type PageSort<T> = {
   prop?: keyof T
   order?: string
   asc?: boolean
@@ -48,7 +48,7 @@ export interface ObjectLiteral {
   [key: string]: any
 }
 
-export type PageRes<T extends ObjectLiteral> = {
+export type PageRes<T> = {
   /**
    * 当前页
    */

@@ -1,5 +1,5 @@
+// @ts-nocheck
 import { CreateDateColumn, UpdateDateColumn } from "typeorm";
-
 export class TimingEntity {
   @CreateDateColumn()
   created_at: Date;

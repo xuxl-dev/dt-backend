@@ -37,6 +37,7 @@ function groupBy<T>(
           grouped[keyValue] = [item]
         }
       })
+      return grouped
     } else {
       throw new Error('key must be string or function')
     }

@@ -1,5 +1,5 @@
 import { ConfigCtx } from '../fc.decorators'
-import validatorMap from './validators'
+import { tryGetValidator } from './validators'
 import { PageQuery } from '../crud-gen/fast-crud.decl'
 import { CRUDMethod } from './decl/base.decl'
 import { isEmptyObject } from 'src/utils/utils'
@@ -190,7 +190,7 @@ function type_checker({ option, fields }: ConfigCtx) {
       for (const [key, f] of Object.entries(fields)) {
         const val = form[key]
         const validator: ((x: any) => boolean) | null =
-          f.validator || validatorMap[f.type]
+          f.validator || tryGetValidator(f.type)
         if (!f.noCheck && validator) {
           if (validator(val)) {
             // all good

@@ -3,6 +3,7 @@ import { createTransform } from '..'
 import { TransformFunction } from '../..'
 
 type ModifiedPart<T, A extends Partial<{ [key in keyof T]: string }>> = {
+  // @ts-ignore
   [K in keyof A]: K extends keyof T ? { [P in A[K]]: T[K] } : never
 }[keyof A]
 
@@ -18,7 +19,7 @@ type MappedName<
   A extends Partial<{ [key in keyof T]: string }>
 > = ModifiedPart<T, A> & UnModifiedPart<T, A>
 
-function rename<T, A extends Partial<{ [key in keyof T]: string }>>(
+function rename<T extends Object, A extends Partial<{ [key in keyof T]: string }>>(
   renames: A
 ): TransformFunction<T, MappedName<T, A>> {
   return createTransform(

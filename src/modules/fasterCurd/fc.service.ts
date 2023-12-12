@@ -165,7 +165,7 @@ export class FasterCrudService {
           (d) => applyCheckers(checkers, d),
           hooks.onCheckFailure
         )
-        
+
         // data = applyTransformers(pre_transformers, data)
         await this.hooked(
           data,
@@ -192,7 +192,7 @@ export class FasterCrudService {
 
         log(`transformed after:`, after)
         return after
-      } catch (e) {
+      } catch (e: any) {
         logger.error(`error when executing method (named: ${method.name}):`)
         log(e)
         throw new Error(e)
@@ -202,14 +202,14 @@ export class FasterCrudService {
 
   private async hooked(
     data: any,
-    action: ((data:any) => any) | ((data:any) => Promise<any>),
-    hook: (data: any) => any
+    action: ((data: any) => any) | ((data: any) => Promise<any>),
+    hook: ((data: any) => any) | ((data: any) => Promise<any>) | undefined
   ) {
     try {
       return await action(data)
     } catch (e) {
       if (hook) {
-        hook(data)
+        await hook(data)
       }
       throw e
     }
@@ -306,7 +306,7 @@ export async function perform_task(
   try {
     const result = await task(body)
     res.status(200).json(result)
-  } catch (e) {
+  } catch (e: any) {
     res
       .status(500)
       .json({
