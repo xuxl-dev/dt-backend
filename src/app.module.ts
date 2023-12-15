@@ -15,6 +15,7 @@ import { TrackerModule } from './modules/tracker/tracker.module';
 import { SioModule } from './modules/sio/sio.module';
 import { DeviceModule } from './modules/device/device.module';
 import { FasterCrudModule } from './modules/fasterCurd/fc.module';
+import { CountDataModule } from './modules/dataShow/count-data/count-data.module';
 
 @Module({
   imports: [
@@ -66,7 +67,8 @@ import { FasterCrudModule } from './modules/fasterCurd/fc.module';
     TrackerModule,
     SioModule,
     DeviceModule,
-    FasterCrudModule
+    FasterCrudModule,
+    CountDataModule,
   ],
   controllers: [AppController],
   providers: [AppService],
