@@ -1,5 +1,6 @@
 import { DeviceID } from 'src/modules/tracker/decl'
 import { GatewayID } from '../../sio/decl'
+import { z } from 'zod'
 
 export enum DataFlag {
   NORMAL = 1 << 0,
@@ -36,3 +37,11 @@ export class PushDataDto<T = object> {
    */
   flag: number
 }
+
+export const PushDataDtoScheme = z.object({
+  sender: z.string(),
+  device: z.string(),
+  content: z.object({}),
+  timestamp: z.number(),
+  flag: z.number(),
+})

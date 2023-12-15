@@ -1,5 +1,5 @@
 import { ConfigCtx } from '../fc.decorators'
-import validatorMap from './validators'
+import { tryGetValidator } from './validators'
 import { PageQuery } from '../crud-gen/fast-crud.decl'
 import { CRUDMethod } from './decl/base.decl'
 import { isEmptyObject } from 'src/utils/utils'
@@ -190,7 +190,7 @@ function type_checker({ option, fields }: ConfigCtx) {
       for (const [key, f] of Object.entries(fields)) {
         const val = form[key]
         const validator: ((x: any) => boolean) | null =
-          f.validator || validatorMap[f.type]
+          f.validator || tryGetValidator(f.type)
         if (!f.noCheck && validator) {
           if (validator(val)) {
             // all good
@@ -216,11 +216,7 @@ function return_transformer({ option }: ConfigCtx) {
   // if (option.method !== 'read') {
   //   return transform_query_return
   // }
-  const {
-    transformQueryRet,
-    TransformQueryRetInplace,
-
-  } = option
+  const { transformQueryRet, TransformQueryRetInplace } = option
   if (transformQueryRet) {
     //TODO add check for function
     transform_query_return = transformQueryRet
@@ -235,15 +231,22 @@ function return_transformer({ option }: ConfigCtx) {
 
   //TODO extract this!
   if (option.method === 'read') {
-    const {TransformRecordInplace} = option 
+    const { TransformRecordInplace, transformQueryRet } = option
     if (TransformRecordInplace) {
       transform_query_return = (x) => {
         x.records.forEach(TransformRecordInplace)
         return x
       }
     }
+
+    if (transformQueryRet) {
+      transform_query_return = (x) => {
+        x.records = transformQueryRet(x.records) // the ret is a paged query, unwrap it
+        return x.records
+      }
+    }
   }
-  
+
   return transform_query_return
 }
 
@@ -258,21 +261,21 @@ function pre_transformer({ option }: ConfigCtx) {
 }
 
 // this is a special one
-function after_transformer({ option, action }: ConfigCtx) {
-  const { transformAfter } = option
+function after_transformer({ option }: ConfigCtx) {
+  const { transformAfter, method } = option
   if (transformAfter) {
     // user's override, use it
     return transformAfter
   }
   let transform_after = (data: any, queryRet: any) => data
 
-  if (form_requests.includes(action)) {
+  if (form_requests.includes(method)) {
     // if Create, Update, Delete, then return form
     transform_after = (data: any, queryRet: any) => {
       return data.form
     }
   }
-  if (query_requests.includes(action)) {
+  if (query_requests.includes(method)) {
     // if Read, then return records
     transform_after = (data: any, queryRet: any) => {
       return queryRet

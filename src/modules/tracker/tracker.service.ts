@@ -2,17 +2,23 @@ import { Injectable } from '@nestjs/common'
 import { CreateTrackerDto } from './dto/create-tracker.dto'
 import { UpdateTrackerDto } from './dto/update-tracker.dto'
 import { DeviceID } from './decl'
+import { Tracker } from './entities/tracker.entity'
+import { Repository } from 'typeorm'
+import { InjectRepository } from '@nestjs/typeorm'
 
 @Injectable()
 export class TrackerService {
-  constructor() {}
+  constructor(
+    @InjectRepository(Tracker)
+    private readonly trackerRepository: Repository<Tracker>
+  ) {}
 
   create(createTrackerDto: CreateTrackerDto) {
     return 'This action adds a new tracker'
   }
 
   findAll() {
-    return `This action returns all tracker`
+    return this.trackerRepository.find()
   }
 
   findOne(id: number) {
