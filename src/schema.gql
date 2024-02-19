@@ -1,0 +1,29 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type FcEntity {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type Query {
+  fcEntity(id: Int!): FcEntity!
+}
+
+type Mutation {
+  createFcEntity(createFcEntityInput: CreateFcEntityInput!): FcEntity!
+  updateFcEntity(updateFcEntityInput: UpdateFcEntityInput!): FcEntity!
+  removeFcEntity(id: Int!): FcEntity!
+}
+
+input CreateFcEntityInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateFcEntityInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}

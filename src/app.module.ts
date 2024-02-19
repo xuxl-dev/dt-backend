@@ -15,6 +15,13 @@ import { TrackerModule } from './modules/tracker/tracker.module';
 import { SioModule } from './modules/sio/sio.module';
 import { DeviceModule } from './modules/device/device.module';
 import { FasterCrudModule } from './modules/fasterCurd/fc.module';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { join } from 'path';
+import { FcModule } from './modules/fasterCurd/gql/fc/fc.module';
+import { FcEntityModule } from './modules/fasterCurd/gql/backend/demo/fc-entity/fc-entity.module';
+import { FCApolloPlugins } from './modules/fasterCurd/gql/backend/plugins/Apollo';
+import { FCAuthPlugins } from './modules/fasterCurd/gql/backend/plugins/Auth';
 
 @Module({
   imports: [
@@ -66,7 +73,23 @@ import { FasterCrudModule } from './modules/fasterCurd/fc.module';
     TrackerModule,
     SioModule,
     DeviceModule,
-    FasterCrudModule
+    FasterCrudModule,
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      plugins: [
+        FCAuthPlugins.create('main'),
+        new FCApolloPlugins(),
+      ],
+      context: async ({ req, res }) => {
+        // Get the user token from the headers.
+        const token = req.headers.authorization || '';
+        return { token };
+      },
+      playground: true,
+    }),
+    FcModule,
+    FcEntityModule,
   ],
   controllers: [AppController],
   providers: [AppService],
