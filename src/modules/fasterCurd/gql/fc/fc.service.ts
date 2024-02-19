@@ -50,7 +50,7 @@ export class FcGQLService {
   async start() {
     const server = new ApolloServer({
       // typeDefs,
-      typeDefs: await fs.readFile(this.configService.getOrThrow('src/schema.gql'), 'utf-8'),
+      typeDefs: await fs.readFile(this.configService.getOrThrow('SCHEMA_PATH'), 'utf-8'),
       resolvers,
     });
 
